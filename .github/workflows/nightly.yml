@@ -5,8 +5,8 @@ on:
     paths:
       - '.github/workflows/nightly.yml'
   schedule:
-    # 每小时检测一次上游更新 (改为每小时的第 16 分钟，避开整点高峰期)
-    - cron: '16 * * * *'
+    # 每天 01:16 检测一次上游更新
+    - cron: '16 1 * * *'
   workflow_dispatch:
     inputs:
       force_build:
@@ -149,6 +149,9 @@ jobs:
             arch: amd64
             ext: ""
           - os: darwin
+            arch: amd64
+            ext: ""
+          - os: darwin
             arch: arm64
             ext: ""
     steps:
@@ -187,8 +190,6 @@ jobs:
             bun_target: bun-windows-x64
           - platform: linux-x64
             bun_target: bun-linux-x64
-          - platform: linux-arm64
-            bun_target: bun-linux-aarch64
           - platform: darwin-x64
             bun_target: bun-darwin-x64
           - platform: darwin-arm64
@@ -335,7 +336,7 @@ jobs:
           ## 🌙 Nightly Build - 自动跟进上游更新
           
           > ⚠️ **警告**: 这是自动构建版本，可能包含未经充分测试的功能，不建议在生产环境使用。
-          > 如需稳定版本，请前往 [Releases](https://github.com/1186258278/OpenCodeChineseTranslation/releases) 页面下载正式版。
+          > 如需稳定版本，请前往 [Releases](https://github.com/Teznew/OpenCodeChineseTranslation/releases) 页面下载正式版。
           
           ---
           
@@ -362,9 +363,6 @@ jobs:
           | macOS Apple Silicon | `opencode-cli-darwin-arm64` | `opencode-zh-CN-nightly-darwin-arm64.zip` |
           | macOS Intel | `opencode-cli-darwin-amd64` | `opencode-zh-CN-nightly-darwin-x64.zip` |
           | Linux x64 | `opencode-cli-linux-amd64` | `opencode-zh-CN-nightly-linux-x64.zip` |
-          | Linux ARM64 | `opencode-cli-linux-arm64` | `opencode-zh-CN-nightly-linux-arm64.zip` |
-          
-          > ⚠️ **注意**: Windows ARM64 暂不支持（Bun 尚未提供官方 Windows ARM64 构建）
           
           ---
           
@@ -386,7 +384,7 @@ jobs:
           
           ### 🔄 自动更新机制
           
-          - **检测频率**: 每小时检测一次上游更新
+          - **检测频率**: 每天 01:16 检测一次上游更新
           - **触发条件**: 累计 ≥5 个新 commit 时自动构建
           - **更新方式**: 固定 `nightly` tag，每次构建覆盖更新
           

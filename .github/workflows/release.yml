@@ -25,21 +25,12 @@ jobs:
     strategy:
       matrix:
         include:
-          # Windows
           - os: windows
             arch: amd64
             ext: .exe
-          - os: windows
-            arch: arm64
-            ext: .exe
-          # Linux
           - os: linux
             arch: amd64
             ext: ""
-          - os: linux
-            arch: arm64
-            ext: ""
-          # macOS
           - os: darwin
             arch: amd64
             ext: ""
@@ -82,8 +73,6 @@ jobs:
             bun_target: bun-windows-x64
           - platform: linux-x64
             bun_target: bun-linux-x64
-          - platform: linux-arm64
-            bun_target: bun-linux-aarch64
           - platform: darwin-x64
             bun_target: bun-darwin-x64
           - platform: darwin-arm64
@@ -145,7 +134,7 @@ jobs:
           mkdir -p dist
           
           # 检查构建产物并打包
-          if [[ "$PLATFORM" == "windows-x64" || "$PLATFORM" == "windows-arm64" ]]; then
+          if [ "$PLATFORM" == "windows-x64" ]; then
             BINARY="${BUILD_DIR}/opencode.exe"
           else
             BINARY="${BUILD_DIR}/opencode"
@@ -232,25 +221,22 @@ jobs:
           | macOS Apple Silicon | \`opencode-cli-darwin-arm64\` | \`opencode-zh-CN-${VERSION}-darwin-arm64.zip\` |
           | macOS Intel | \`opencode-cli-darwin-amd64\` | \`opencode-zh-CN-${VERSION}-darwin-x64.zip\` |
           | Linux x64 | \`opencode-cli-linux-amd64\` | \`opencode-zh-CN-${VERSION}-linux-x64.zip\` |
-          | Linux ARM64 | \`opencode-cli-linux-arm64\` | \`opencode-zh-CN-${VERSION}-linux-arm64.zip\` |
-          
-          > ⚠️ **注意**: Windows ARM64 暂不支持（Bun 尚未提供官方 Windows ARM64 构建）
           
           ### 🚀 快速安装
           
           **Windows (PowerShell)**
           \`\`\`powershell
-          powershell -c "irm https://cdn.jsdelivr.net/gh/1186258278/OpenCodeChineseTranslation@main/install.ps1 | iex"
+          powershell -c "irm https://cdn.jsdelivr.net/gh/Teznew/OpenCodeChineseTranslation@main/install.ps1 | iex"
           \`\`\`
           
           **Linux / macOS**
           \`\`\`bash
-          curl -fsSL https://cdn.jsdelivr.net/gh/1186258278/OpenCodeChineseTranslation@main/install.sh | bash
+          curl -fsSL https://cdn.jsdelivr.net/gh/Teznew/OpenCodeChineseTranslation@main/install.sh | bash
           \`\`\`
           
           ### 📝 更新日志
           
-          详见 [CHANGELOG.md](https://github.com/1186258278/OpenCodeChineseTranslation/blob/main/CHANGELOG.md)
+          详见 [CHANGELOG.md](https://github.com/Teznew/OpenCodeChineseTranslation/blob/main/CHANGELOG.md)
           EOF
 
       - name: Create Release
