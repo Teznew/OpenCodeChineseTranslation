@@ -1,7 +1,7 @@
 # Antigravity Tools + OpenCode 集成指南
 
 [![Antigravity](https://img.shields.io/badge/Antigravity-v3.3.15-orange.svg)](https://github.com/lbjlaq/Antigravity-Manager)
-[![OpenCode](https://img.shields.io/badge/OpenCode-中文版-green.svg)](https://github.com/1186258278/OpenCodeChineseTranslation)
+[![OpenCode](https://img.shields.io/badge/OpenCode-中文版-green.svg)](https://github.com/Teznew/OpenCodeChineseTranslation)
 
 > 使用 Antigravity Tools 作为本地 AI 网关，让 OpenCode 接入 Gemini 3 Pro、Claude Opus 4.5 等强大模型！
 
@@ -302,7 +302,7 @@ claude
 | [Antigravity Manager](https://github.com/lbjlaq/Antigravity-Manager) | Antigravity 项目仓库 |
 | [Antigravity Releases](https://github.com/lbjlaq/Antigravity-Manager/releases) | 下载安装包 |
 | [OpenCode 官方](https://github.com/opencode-ai/opencode) | OpenCode 原项目 |
-| [OpenCode 中文版](https://github.com/1186258278/OpenCodeChineseTranslation) | 本项目 |
+| [OpenCode 中文版](https://github.com/Teznew/OpenCodeChineseTranslation) | 本项目 |
 
 ---
 
