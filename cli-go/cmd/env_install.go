@@ -303,7 +303,7 @@ func installNodeJS() {
 			runInstallCommand("brew", "install", "node@20")
 		} else {
 			fmt.Println("  请先安装 Homebrew:")
-			fmt.Println("  /bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\"")
+			fmt.Println("  /bin/bash -c \"$(curl -fsSL https://gh-proxy.com/https://raw.githubusercontent.com/Homebrew/install/refs/heads/HEAD/install.sh)\"")
 		}
 
 	case "linux":

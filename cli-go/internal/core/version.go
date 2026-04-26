@@ -84,7 +84,7 @@ func GetOpencodeChangelog(limit int) string {
 		target = "origin/main"
 	}
 
-	out, err := Exec("git", "-C", opencodeDir, "log", target, "-n", fmt.Sprintf("%d", limit), "--format=- %s ([%h](https://github.com/anomalyco/opencode/commit/%H))")
+	out, err := Exec("git", "-C", opencodeDir, "log", target, "-n", fmt.Sprintf("%d", limit), "--format=- %s ([%h](https://gh-proxy.com/https://github.com/anomalyco/opencode/commit/%H))")
 
 	if err != nil {
 		return fmt.Sprintf("- 无法获取更新日志: %v", err)

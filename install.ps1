@@ -82,7 +82,7 @@ if (Test-Path $localFile) {
         Write-Color "使用指定版本: $tagName" "Green"
     } else {
         try {
-            $latest = Invoke-RestMethod -Uri "https://api.github.com/repos/$repo/releases/latest" -ErrorAction Stop
+            $latest = Invoke-RestMethod -Uri "https://gh-proxy.com/https://api.github.com/repos/$repo/releases/latest" -ErrorAction Stop
             if ($latest.tag_name) {
                 $tagName = $latest.tag_name
                 Write-Color "发现最新版本: $tagName" "Green"
@@ -97,7 +97,7 @@ if (Test-Path $localFile) {
     # 对于 release assets，我们可以使用 GitHub 官方链接，但在中国可能慢
     # 这里我们优先尝试本地，如果不行则在线下载
     
-    $downloadUrl = "https://github.com/$repo/releases/download/$tagName/$fileName"
+    $downloadUrl = "https://gh-proxy.com/https://github.com/$repo/releases/download/$tagName/$fileName"
     # 备用下载源 (如果将来有镜像)
     # $downloadUrl = "https://mirror.example.com/$fileName"
 
@@ -126,7 +126,7 @@ if (Test-Path $localFile) {
         Write-Color "下载失败! 请检查网络连接或尝试手动下载。" "Red"
         Write-Color "错误信息: $_" "Red"
         Write-Color "`n手动下载提示:" "Yellow"
-        Write-Color "1. 访问 https://github.com/$repo/releases" "Yellow"
+        Write-Color "1. 访问 https://gh-proxy.com/https://github.com/$repo/releases" "Yellow"
         Write-Color "2. 下载 $fileName" "Yellow"
         Write-Color "3. 将文件放到此脚本同目录下" "Yellow"
         Write-Color "4. 重新运行此脚本" "Yellow"

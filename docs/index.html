@@ -479,7 +479,7 @@
                         <i class="fa-solid fa-sun"></i>
                     </button>
                     
-                    <a href="https://github.com/Teznew/OpenCodeChineseTranslation" target="_blank" class="text-muted hover:text-main transition-colors">
+                    <a href="https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation" target="_blank" class="text-muted hover:text-main transition-colors">
                         <i class="fa-brands fa-github text-xl"></i>
                     </a>
                 </div>
@@ -499,7 +499,7 @@
     <section class="pt-36 pb-24 px-4 relative z-10">
         <div class="max-w-5xl mx-auto text-center">
             <!-- Version Badge -->
-            <a href="https://github.com/Teznew/OpenCodeChineseTranslation/releases/latest" target="_blank" 
+            <a href="https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation/releases/latest" target="_blank" 
                class="animate-in stagger-1 inline-flex items-center gap-2.5 px-4 py-2 rounded-full glass-tertiary text-sm font-medium mb-10 hover-lift group">
                 <span class="flex h-2 w-2 rounded-full bg-success animate-pulse shadow-lg shadow-success/50"></span>
                 <span id="latest-version" class="text-main">v8.6.1</span>
@@ -526,7 +526,7 @@
                     <i class="fa-solid fa-download"></i>
                     <span>开始使用</span>
                 </a>
-                <a href="https://github.com/Teznew/OpenCodeChineseTranslation" target="_blank" 
+                <a href="https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation" target="_blank" 
                    class="btn-ios inline-flex items-center justify-center gap-2 glass-tertiary text-main font-medium px-8 py-4 rounded-2xl hover:bg-white/10 transition-all text-lg">
                     <i class="fa-brands fa-github"></i>
                     <span>查看源码</span>
@@ -569,7 +569,7 @@
                 </div>
                 
                 <div class="flex gap-3">
-                    <a href="https://github.com/Teznew/OpenCodeChineseTranslation" target="_blank" 
+                    <a href="https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation" target="_blank" 
                        class="btn-ios text-sm glass-tertiary hover:bg-white/10 px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 font-medium text-main">
                         <i class="fa-brands fa-github"></i> GitHub
                     </a>
@@ -772,13 +772,13 @@
             <div class="grid grid-cols-2 md:grid-cols-4 gap-10 mb-12 text-sm">
                 <div class="flex flex-col gap-3">
                     <h4 class="text-main font-bold mb-2">资源</h4>
-                    <a href="https://github.com/Teznew/OpenCodeChineseTranslation" class="text-muted hover:text-primary transition-colors">GitHub 仓库</a>
+                    <a href="https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation" class="text-muted hover:text-primary transition-colors">GitHub 仓库</a>
                     <a href="https://gitee.com/QtCodeCreators/OpenCodeChineseTranslation" class="text-muted hover:text-primary transition-colors">Gitee 镜像</a>
-                    <a href="https://github.com/Teznew/OpenCodeChineseTranslation/releases" class="text-muted hover:text-primary transition-colors">历史版本</a>
+                    <a href="https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation/releases" class="text-muted hover:text-primary transition-colors">历史版本</a>
                 </div>
                 <div class="flex flex-col gap-3">
                     <h4 class="text-main font-bold mb-2">支持</h4>
-                    <a href="https://github.com/Teznew/OpenCodeChineseTranslation/issues" class="text-muted hover:text-primary transition-colors">问题反馈</a>
+                    <a href="https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation/issues" class="text-muted hover:text-primary transition-colors">问题反馈</a>
                     <a href="#" class="text-muted hover:text-primary transition-colors">使用文档</a>
                 </div>
                 <div class="flex flex-col gap-3">
@@ -942,7 +942,7 @@
         async function fetchReleaseData(channel) {
             const endpoint = channel === 'stable' ? 'latest' : 'tags/nightly';
             try {
-                const resp = await fetch(`https://api.github.com/repos/${repo}/releases/${endpoint}`);
+                const resp = await fetch(`https://gh-proxy.com/https://api.github.com/repos/${repo}/releases/${endpoint}`);
                 if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
                 const data = await resp.json();
                 releaseCache[channel] = data;
@@ -1126,18 +1126,18 @@
             tag_name: 'v8.6.1',
             published_at: '2026-01-27T00:00:00Z',
             assets: [
-                { name: 'opencode-zh-CN-v8.6.1-windows-x64.zip', browser_download_url: `https://github.com/${repo}/releases/download/v8.6.1/opencode-zh-CN-v8.6.1-windows-x64.zip`, size: 52428800 },
-                { name: 'opencode-zh-CN-v8.6.1-windows-arm64.zip', browser_download_url: `https://github.com/${repo}/releases/download/v8.6.1/opencode-zh-CN-v8.6.1-windows-arm64.zip`, size: 52428800 },
-                { name: 'opencode-zh-CN-v8.6.1-darwin-x64.zip', browser_download_url: `https://github.com/${repo}/releases/download/v8.6.1/opencode-zh-CN-v8.6.1-darwin-x64.zip`, size: 33554432 },
-                { name: 'opencode-zh-CN-v8.6.1-darwin-arm64.zip', browser_download_url: `https://github.com/${repo}/releases/download/v8.6.1/opencode-zh-CN-v8.6.1-darwin-arm64.zip`, size: 33554432 },
-                { name: 'opencode-zh-CN-v8.6.1-linux-x64.zip', browser_download_url: `https://github.com/${repo}/releases/download/v8.6.1/opencode-zh-CN-v8.6.1-linux-x64.zip`, size: 51380224 },
-                { name: 'opencode-zh-CN-v8.6.1-linux-arm64.zip', browser_download_url: `https://github.com/${repo}/releases/download/v8.6.1/opencode-zh-CN-v8.6.1-linux-arm64.zip`, size: 51380224 },
-                { name: 'opencode-cli-windows-amd64.exe', browser_download_url: `https://github.com/${repo}/releases/download/v8.6.1/opencode-cli-windows-amd64.exe`, size: 8200000 },
-                { name: 'opencode-cli-darwin-amd64', browser_download_url: `https://github.com/${repo}/releases/download/v8.6.1/opencode-cli-darwin-amd64`, size: 7500000 },
-                { name: 'opencode-cli-darwin-arm64', browser_download_url: `https://github.com/${repo}/releases/download/v8.6.1/opencode-cli-darwin-arm64`, size: 7500000 },
-                { name: 'opencode-cli-linux-amd64', browser_download_url: `https://github.com/${repo}/releases/download/v8.6.1/opencode-cli-linux-amd64`, size: 7900000 }
+                { name: 'opencode-zh-CN-v8.6.1-windows-x64.zip', browser_download_url: `https://gh-proxy.com/https://github.com/${repo}/releases/download/v8.6.1/opencode-zh-CN-v8.6.1-windows-x64.zip`, size: 52428800 },
+                { name: 'opencode-zh-CN-v8.6.1-windows-arm64.zip', browser_download_url: `https://gh-proxy.com/https://github.com/${repo}/releases/download/v8.6.1/opencode-zh-CN-v8.6.1-windows-arm64.zip`, size: 52428800 },
+                { name: 'opencode-zh-CN-v8.6.1-darwin-x64.zip', browser_download_url: `https://gh-proxy.com/https://github.com/${repo}/releases/download/v8.6.1/opencode-zh-CN-v8.6.1-darwin-x64.zip`, size: 33554432 },
+                { name: 'opencode-zh-CN-v8.6.1-darwin-arm64.zip', browser_download_url: `https://gh-proxy.com/https://github.com/${repo}/releases/download/v8.6.1/opencode-zh-CN-v8.6.1-darwin-arm64.zip`, size: 33554432 },
+                { name: 'opencode-zh-CN-v8.6.1-linux-x64.zip', browser_download_url: `https://gh-proxy.com/https://github.com/${repo}/releases/download/v8.6.1/opencode-zh-CN-v8.6.1-linux-x64.zip`, size: 51380224 },
+                { name: 'opencode-zh-CN-v8.6.1-linux-arm64.zip', browser_download_url: `https://gh-proxy.com/https://github.com/${repo}/releases/download/v8.6.1/opencode-zh-CN-v8.6.1-linux-arm64.zip`, size: 51380224 },
+                { name: 'opencode-cli-windows-amd64.exe', browser_download_url: `https://gh-proxy.com/https://github.com/${repo}/releases/download/v8.6.1/opencode-cli-windows-amd64.exe`, size: 8200000 },
+                { name: 'opencode-cli-darwin-amd64', browser_download_url: `https://gh-proxy.com/https://github.com/${repo}/releases/download/v8.6.1/opencode-cli-darwin-amd64`, size: 7500000 },
+                { name: 'opencode-cli-darwin-arm64', browser_download_url: `https://gh-proxy.com/https://github.com/${repo}/releases/download/v8.6.1/opencode-cli-darwin-arm64`, size: 7500000 },
+                { name: 'opencode-cli-linux-amd64', browser_download_url: `https://gh-proxy.com/https://github.com/${repo}/releases/download/v8.6.1/opencode-cli-linux-amd64`, size: 7900000 }
             ],
-            body: '详见 [CHANGELOG.md](https://github.com/Teznew/OpenCodeChineseTranslation/blob/main/CHANGELOG.md)'
+            body: '详见 [CHANGELOG.md](https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation/blob/main/CHANGELOG.md)'
         };
 
         function applyReleaseData(data, isFallback = false) {

@@ -6,7 +6,7 @@
     "testPassRate": "100%",
     "upstream": {
         "repo": "anomalyco/opencode",
-        "url": "https://github.com/anomalyco/opencode",
+        "url": "https://gh-proxy.com/https://github.com/anomalyco/opencode",
         "branch": "dev",
         "version": "1.1.53"
     },
@@ -14,7 +14,7 @@
     "maintainer": {
         "name": "CodeCreator",
         "wechat": "CodeCreator",
-        "github": "https://github.com/Teznew/OpenCodeChineseTranslation"
+        "github": "https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation"
     },
     "modules":  {
                     "dialogs":  [

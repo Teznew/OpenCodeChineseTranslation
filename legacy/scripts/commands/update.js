@@ -31,7 +31,7 @@ async function run(options = {}) {
   // 克隆新仓库
   success('克隆 OpenCode 源码...');
   const result = await cloneRepo(
-    'https://github.com/anomalyco/opencode.git',
+    'https://gh-proxy.com/https://github.com/anomalyco/opencode.git',
     opencodeDir,
     { depth: 20 }
   );

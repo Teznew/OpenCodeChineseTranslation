@@ -8,7 +8,7 @@ const { exec } = require('../core/utils.js');
 const { getPlatform } = require('../core/utils.js');
 
 // 项目仓库地址
-const GITHUB_URL = 'https://github.com/Teznew/OpenCodeChineseTranslation';
+const GITHUB_URL = 'https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation';
 const GITEE_URL = 'https://gitee.com/QtCodeCreators/OpenCodeChineseTranslation';
 
 /**

@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	GitHubAPIURL = "https://api.github.com/repos/Teznew/OpenCodeChineseTranslation/releases/latest"
+	GitHubAPIURL = "https://gh-proxy.com/https://api.github.com/repos/Teznew/OpenCodeChineseTranslation/releases/latest"
 	GitHubRepo   = "Teznew/OpenCodeChineseTranslation"
 )
 
@@ -70,7 +70,7 @@ func runDownload() {
 		fmt.Println("    2. 仓库暂无 Release 发布")
 		fmt.Println("")
 		fmt.Println("  备选方案:")
-		fmt.Printf("    手动下载: https://github.com/%s/releases\n", GitHubRepo)
+		fmt.Printf("    手动下载: https://gh-proxy.com/https://github.com/%s/releases\n", GitHubRepo)
 		return
 	}
 
@@ -112,7 +112,7 @@ func runDownload() {
 			}
 		}
 		fmt.Println("")
-		fmt.Printf("  手动下载: https://github.com/%s/releases/tag/%s\n", GitHubRepo, release.TagName)
+		fmt.Printf("  手动下载: https://gh-proxy.com/https://github.com/%s/releases/tag/%s\n", GitHubRepo, release.TagName)
 		return
 	}
 

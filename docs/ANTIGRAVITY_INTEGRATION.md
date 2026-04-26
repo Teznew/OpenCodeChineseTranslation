@@ -1,7 +1,7 @@
 # Antigravity Tools + OpenCode 集成指南
 
-[![Antigravity](https://img.shields.io/badge/Antigravity-v3.3.15-orange.svg)](https://github.com/lbjlaq/Antigravity-Manager)
-[![OpenCode](https://img.shields.io/badge/OpenCode-中文版-green.svg)](https://github.com/Teznew/OpenCodeChineseTranslation)
+[![Antigravity](https://img.shields.io/badge/Antigravity-v3.3.15-orange.svg)](https://gh-proxy.com/https://github.com/lbjlaq/Antigravity-Manager)
+[![OpenCode](https://img.shields.io/badge/OpenCode-中文版-green.svg)](https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation)
 
 > 使用 Antigravity Tools 作为本地 AI 网关，让 OpenCode 接入 Gemini 3 Pro、Claude Opus 4.5 等强大模型！
 
@@ -18,7 +18,7 @@
 | ⚡ **智能调度** | 429 自动切换账号、会话粘性、后台任务降级 |
 | 🧠 **Thinking 支持** | 完美支持 Claude Extended Thinking 模式 |
 
-**项目地址**: https://github.com/lbjlaq/Antigravity-Manager
+**项目地址**: https://gh-proxy.com/https://github.com/lbjlaq/Antigravity-Manager
 
 ---
 
@@ -28,13 +28,13 @@
 
 **macOS (Homebrew):**
 ```bash
-brew tap lbjlaq/antigravity-manager https://github.com/lbjlaq/Antigravity-Manager
+brew tap lbjlaq/antigravity-manager https://gh-proxy.com/https://github.com/lbjlaq/Antigravity-Manager
 brew install --cask --no-quarantine antigravity-tools
 ```
 
 **Windows / Linux:**
 
-从 [GitHub Releases](https://github.com/lbjlaq/Antigravity-Manager/releases) 下载对应平台安装包：
+从 [GitHub Releases](https://gh-proxy.com/https://github.com/lbjlaq/Antigravity-Manager/releases) 下载对应平台安装包：
 - Windows: `.msi` 或 `.zip`
 - Linux: `.deb` 或 `.AppImage`
 - macOS: `.dmg`
@@ -299,10 +299,10 @@ claude
 
 | 链接 | 说明 |
 |------|------|
-| [Antigravity Manager](https://github.com/lbjlaq/Antigravity-Manager) | Antigravity 项目仓库 |
-| [Antigravity Releases](https://github.com/lbjlaq/Antigravity-Manager/releases) | 下载安装包 |
-| [OpenCode 官方](https://github.com/opencode-ai/opencode) | OpenCode 原项目 |
-| [OpenCode 中文版](https://github.com/Teznew/OpenCodeChineseTranslation) | 本项目 |
+| [Antigravity Manager](https://gh-proxy.com/https://github.com/lbjlaq/Antigravity-Manager) | Antigravity 项目仓库 |
+| [Antigravity Releases](https://gh-proxy.com/https://github.com/lbjlaq/Antigravity-Manager/releases) | 下载安装包 |
+| [OpenCode 官方](https://gh-proxy.com/https://github.com/opencode-ai/opencode) | OpenCode 原项目 |
+| [OpenCode 中文版](https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation) | 本项目 |
 
 ---
 

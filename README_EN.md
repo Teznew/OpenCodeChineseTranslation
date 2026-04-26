@@ -1,8 +1,8 @@
 # OpenCode Chinese Translation Distribution
 
-[![Release](https://img.shields.io/github/v/release/Teznew/OpenCodeChineseTranslation?label=Latest&style=flat-square&color=blue)](https://github.com/Teznew/OpenCodeChineseTranslation/releases/latest)
+[![Release](https://img.shields.io/github/v/release/Teznew/OpenCodeChineseTranslation?label=Latest&style=flat-square&color=blue)](https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation/releases/latest)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg?style=flat-square)](#)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/Teznew/OpenCodeChineseTranslation/release.yml?label=Daily%20Build&style=flat-square)](https://github.com/Teznew/OpenCodeChineseTranslation/actions)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/Teznew/OpenCodeChineseTranslation/release.yml?label=Daily%20Build&style=flat-square)](https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation/actions)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE)
 
 [中文文档](README.md)
@@ -13,7 +13,7 @@
 
 ## Overview
 
-**OpenCode Chinese Translation** is a fully automated localization project for [OpenCode](https://github.com/anomalyco/opencode). We've built a complete CI/CD pipeline using GitHub Actions that runs daily at **01:16**, pulls the latest source code, applies Chinese translation patches, and builds installation packages for Windows x64, Linux x64, and macOS (Intel/Apple Silicon).
+**OpenCode Chinese Translation** is a fully automated localization project for [OpenCode](https://gh-proxy.com/https://github.com/anomalyco/opencode). We've built a complete CI/CD pipeline using GitHub Actions that runs daily at **01:16**, pulls the latest source code, applies Chinese translation patches, and builds installation packages for Windows x64, Linux x64, and macOS (Intel/Apple Silicon).
 
 **Key Features:**
 *   ⚡️ **Daily Auto-Updates**: Stay up-to-date with the latest official features.
@@ -61,7 +61,7 @@ This automatically downloads the latest prebuilt Chinese version from GitHub Rel
 
 ### 4. Manual Download
 
-You can also visit the [Releases page](https://github.com/Teznew/OpenCodeChineseTranslation/releases/latest) to download binaries directly.
+You can also visit the [Releases page](https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation/releases/latest) to download binaries directly.
 
 | Platform | CLI Tool |
 |----------|----------|
@@ -70,7 +70,7 @@ You can also visit the [Releases page](https://github.com/Teznew/OpenCodeChinese
 | macOS Intel | `opencode-cli-darwin-amd64` |
 | Linux x64 | `opencode-cli-linux-amd64` |
 
-> Chinese OpenCode binaries are available as ZIP packages on the [Releases page](https://github.com/Teznew/OpenCodeChineseTranslation/releases/latest).
+> Chinese OpenCode binaries are available as ZIP packages on the [Releases page](https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation/releases/latest).
 
 ---
 

@@ -1,7 +1,7 @@
 # Oh My OpenCode (Sisyphus) 终极实战指南
 
-[![oh-my-opencode](https://img.shields.io/badge/oh--my--opencode-v3.0-blue.svg)](https://github.com/code-yeongyu/oh-my-opencode)
-[![OpenCode](https://img.shields.io/badge/OpenCode-中文版-green.svg)](https://github.com/Teznew/OpenCodeChineseTranslation)
+[![oh-my-opencode](https://img.shields.io/badge/oh--my--opencode-v3.0-blue.svg)](https://gh-proxy.com/https://github.com/code-yeongyu/oh-my-opencode)
+[![OpenCode](https://img.shields.io/badge/OpenCode-中文版-green.svg)](https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation)
 
 > **"Sisyphus 是像你的团队一样编码的智能体。"**
 > 
@@ -34,7 +34,7 @@ bunx oh-my-opencode install --no-tui --claude=max20 --gemini=yes --chatgpt=no
 
 ### 3. AI 辅助安装
 如果你懒得动手，直接把下面这句话发给 OpenCode：
-> "Install and configure oh-my-opencode by following the instructions from https://github.com/code-yeongyu/oh-my-opencode"
+> "Install and configure oh-my-opencode by following the instructions from https://gh-proxy.com/https://github.com/code-yeongyu/oh-my-opencode"
 
 ---
 
@@ -56,7 +56,7 @@ opencode auth login
 **推荐配置结构：**
 ```jsonc
 {
-  "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/master/assets/oh-my-opencode.schema.json",
+  "$schema": "https://gh-proxy.com/https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/refs/heads/master/assets/oh-my-opencode.schema.json",
   
   // 1. 认证模式：如果使用了 Antigravity 插件，设为 false
   "google_auth": false,

@@ -82,7 +82,7 @@ function writeOmoConfig(config) {
   }
 
   config.$schema =
-    'https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/master/assets/oh-my-opencode.schema.json';
+    'https://gh-proxy.com/https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/refs/heads/master/assets/oh-my-opencode.schema.json';
 
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf-8');
   return configPath;
@@ -362,7 +362,7 @@ async function installOmo(options = {}) {
   console.log('');
 
   log('  更多信息:', 'yellow');
-  log('    https://github.com/code-yeongyu/oh-my-opencode', 'dim');
+  log('    https://gh-proxy.com/https://github.com/code-yeongyu/oh-my-opencode', 'dim');
   console.log('');
 
   return true;

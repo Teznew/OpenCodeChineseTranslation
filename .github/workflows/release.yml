@@ -101,7 +101,7 @@ jobs:
 
       - name: Clone OpenCode source
         run: |
-          git clone --depth 1 --branch dev https://github.com/anomalyco/opencode.git opencode-zh-CN
+          git clone --depth 1 --branch dev https://gh-proxy.com/https://github.com/anomalyco/opencode.git opencode-zh-CN
 
       - name: Apply Chinese translation
         env:
@@ -236,7 +236,7 @@ jobs:
           
           ### 📝 更新日志
           
-          详见 [CHANGELOG.md](https://github.com/Teznew/OpenCodeChineseTranslation/blob/main/CHANGELOG.md)
+          详见 [CHANGELOG.md](https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation/blob/main/CHANGELOG.md)
           EOF
 
       - name: Create Release

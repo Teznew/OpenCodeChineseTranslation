@@ -15,7 +15,7 @@ var updateCmd = &cobra.Command{
 	Use:   "update",
 	Short: "更新 OpenCode 源码",
 	Run: func(cmd *cobra.Command, args []string) {
-		repoURL := "https://github.com/anomalyco/opencode.git"
+		repoURL := "https://gh-proxy.com/https://github.com/anomalyco/opencode.git"
 		// 使用 Gitee 镜像加速 (可选，可以通过 flag 控制)
 		// repoURL = "https://gitee.com/mirrors/opencode.git"
 

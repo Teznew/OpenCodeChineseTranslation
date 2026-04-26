@@ -1,14 +1,14 @@
 # OpenCode 中文汉化发行版
 
-[![Release](https://img.shields.io/github/v/release/Teznew/OpenCodeChineseTranslation?label=最新正式版&style=flat-square&color=blue)](https://github.com/Teznew/OpenCodeChineseTranslation/releases/latest)
-[![Nightly](https://img.shields.io/badge/Nightly-自动构建-orange?style=flat-square)](https://github.com/Teznew/OpenCodeChineseTranslation/releases/tag/nightly)
+[![Release](https://img.shields.io/github/v/release/Teznew/OpenCodeChineseTranslation?label=最新正式版&style=flat-square&color=blue)](https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation/releases/latest)
+[![Nightly](https://img.shields.io/badge/Nightly-自动构建-orange?style=flat-square)](https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation/releases/tag/nightly)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg?style=flat-square)](#)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/Teznew/OpenCodeChineseTranslation/release.yml?label=构建状态&style=flat-square)](https://github.com/Teznew/OpenCodeChineseTranslation/actions)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/Teznew/OpenCodeChineseTranslation/release.yml?label=构建状态&style=flat-square)](https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation/actions)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE)
 
 > 🚀 **OpenCode 汉化发行版** | ⚡️ **每日自动同步官方更新** | 全自动构建 Windows x64 / Linux x64 / macOS 安装包
 > 
-> 🔥 **每日构建 (Nightly)**：[点击下载最新开发版](https://github.com/Teznew/OpenCodeChineseTranslation/releases/tag/nightly) (每天 01:16 更新 · 推荐开发者)
+> 🔥 **每日构建 (Nightly)**：[点击下载最新开发版](https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation/releases/tag/nightly) (每天 01:16 更新 · 推荐开发者)
 > 
 > 🎉 **访问官方网站**：[https://1186258278.github.io/OpenCodeChineseTranslation/](https://1186258278.github.io/OpenCodeChineseTranslation/)
 
@@ -123,19 +123,19 @@ opencode-cli download
 ### 4. 手动下载
 
 **稳定版 (Stable)** - 推荐普通用户使用：
-访问 [Releases 页面](https://github.com/Teznew/OpenCodeChineseTranslation/releases/latest) 下载最新 v8.x.x 版本。
+访问 [Releases 页面](https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation/releases/latest) 下载最新 v8.x.x 版本。
 
 **每日构建 (Nightly)** - 推荐开发者/尝鲜用户：
-访问 [Nightly 页面](https://github.com/Teznew/OpenCodeChineseTranslation/releases/tag/nightly) 下载最新自动构建版本。
+访问 [Nightly 页面](https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation/releases/tag/nightly) 下载最新自动构建版本。
 
 | 平台 | 管理工具 (CLI) |
 |------|----------------|
-| Windows x64 | [opencode-cli-windows-amd64.exe](https://github.com/Teznew/OpenCodeChineseTranslation/releases/latest/download/opencode-cli-windows-amd64.exe) |
-| macOS Apple Silicon | [opencode-cli-darwin-arm64](https://github.com/Teznew/OpenCodeChineseTranslation/releases/latest/download/opencode-cli-darwin-arm64) |
-| macOS Intel | [opencode-cli-darwin-amd64](https://github.com/Teznew/OpenCodeChineseTranslation/releases/latest/download/opencode-cli-darwin-amd64) |
-| Linux x64 | [opencode-cli-linux-amd64](https://github.com/Teznew/OpenCodeChineseTranslation/releases/latest/download/opencode-cli-linux-amd64) |
+| Windows x64 | [opencode-cli-windows-amd64.exe](https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation/releases/latest/download/opencode-cli-windows-amd64.exe) |
+| macOS Apple Silicon | [opencode-cli-darwin-arm64](https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation/releases/latest/download/opencode-cli-darwin-arm64) |
+| macOS Intel | [opencode-cli-darwin-amd64](https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation/releases/latest/download/opencode-cli-darwin-amd64) |
+| Linux x64 | [opencode-cli-linux-amd64](https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation/releases/latest/download/opencode-cli-linux-amd64) |
 
-> 💡 **提示**: 汉化版 OpenCode 请在 [Releases 页面](https://github.com/Teznew/OpenCodeChineseTranslation/releases/latest) 下载 ZIP 包。[Nightly 构建](https://github.com/Teznew/OpenCodeChineseTranslation/releases/tag/nightly) 每天 01:16 更新。
+> 💡 **提示**: 汉化版 OpenCode 请在 [Releases 页面](https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation/releases/latest) 下载 ZIP 包。[Nightly 构建](https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation/releases/tag/nightly) 每天 01:16 更新。
 
 ---
 
@@ -225,7 +225,7 @@ opencode-cli download       # 或直接下载预编译版（不用装环境）
 ```
 
 ### Q: 汉化失效了？
-下载 [Nightly 版本](https://github.com/Teznew/OpenCodeChineseTranslation/releases/tag/nightly)（每天 01:16 自动跟进官方更新）
+下载 [Nightly 版本](https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation/releases/tag/nightly)（每天 01:16 自动跟进官方更新）
 
 ### Q: 安装目录在哪？
 统一目录结构 `~/.opencode-i18n/`：

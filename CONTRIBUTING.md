@@ -78,7 +78,7 @@ go test ./...
 
 ## Git 提交规范 (Commit Convention)
 
-我们遵循 [Angular Commit Message Guidelines](https://github.com/angular/angular/blob/master/CONTRIBUTING.md#commit) 规范。
+我们遵循 [Angular Commit Message Guidelines](https://gh-proxy.com/https://github.com/angular/angular/blob/master/CONTRIBUTING.md#commit) 规范。
 
 ```
 <type>(<scope>): <subject>

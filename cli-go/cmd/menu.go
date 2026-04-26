@@ -175,7 +175,7 @@ func executeAction(action string) {
 
 	case "github":
 		fmt.Println("\n▶ 打开 GitHub 仓库...")
-		openBrowser("https://github.com/Teznew/OpenCodeChineseTranslation")
+		openBrowser("https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation")
 
 	case "env":
 		fmt.Println("\n▶ 检查环境...")

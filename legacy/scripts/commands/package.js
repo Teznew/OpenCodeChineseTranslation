@@ -47,7 +47,7 @@ function getOpencodeChangelog(limit = 10) {
     if (!fs.existsSync(opencodeDir)) return '- 无法获取更新日志 (源码目录不存在)';
 
     // 获取最近的提交记录
-    const logOutput = exec(`git log -n ${limit} --format="- %s ([%h](https://github.com/anomalyco/opencode/commit/%H))"`, { 
+    const logOutput = exec(`git log -n ${limit} --format="- %s ([%h](https://gh-proxy.com/https://github.com/anomalyco/opencode/commit/%H))"`, { 
       cwd: opencodeDir, 
       stdio: 'pipe' 
     });
@@ -221,10 +221,10 @@ opencode
 
 ## 🔗 相关链接
 
-- [汉化项目 GitHub](https://github.com/Teznew/OpenCodeChineseTranslation)
+- [汉化项目 GitHub](https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation)
 - [汉化项目 Gitee](https://gitee.com/QtCodeCreators/OpenCodeChineseTranslation)
-- [OpenCode 官方](https://github.com/anomalyco/opencode)
-- [问题反馈](https://github.com/Teznew/OpenCodeChineseTranslation/issues)
+- [OpenCode 官方](https://gh-proxy.com/https://github.com/anomalyco/opencode)
+- [问题反馈](https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation/issues)
 
 ---
 
@@ -232,7 +232,7 @@ opencode
 
 1. 首次运行需要配置 API Key
 2. 建议使用终端/命令行运行以获得最佳体验
-3. 如遇问题请查看 [FAQ](https://github.com/Teznew/OpenCodeChineseTranslation#-常见问题) 或提交 Issue
+3. 如遇问题请查看 [FAQ](https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation#-常见问题) 或提交 Issue
 
 ---
 

@@ -16,12 +16,12 @@
 
 **Windows PowerShell:**
 ```powershell
-powershell -c "irm https://raw.githubusercontent.com/Teznew/OpenCodeChineseTranslation/main/install.ps1 | iex"
+powershell -c "irm https://gh-proxy.com/https://raw.githubusercontent.com/Teznew/OpenCodeChineseTranslation/refs/heads/main/install.ps1 | iex"
 ```
 
 **macOS / Linux:**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Teznew/OpenCodeChineseTranslation/main/install.sh | bash
+curl -fsSL https://gh-proxy.com/https://raw.githubusercontent.com/Teznew/OpenCodeChineseTranslation/refs/heads/main/install.sh | bash
 ```
 
 ### 手动安装

@@ -121,7 +121,7 @@ else
     else
         # 尝试获取最新版本
         if command -v curl >/dev/null 2>&1; then
-            LATEST_VERSION=$(curl -s "https://api.github.com/repos/$REPO/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+            LATEST_VERSION=$(curl -s "https://gh-proxy.com/https://api.github.com/repos/$REPO/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
             if [ ! -z "$LATEST_VERSION" ]; then
                 VERSION="$LATEST_VERSION"
                 echo -e "${GREEN}发现最新版本: $VERSION${NC}"
@@ -130,7 +130,7 @@ else
             fi
         elif command -v wget >/dev/null 2>&1; then
             # wget 的 stdout 输出比较嘈杂，使用 -qO-
-            LATEST_VERSION=$(wget -qO- "https://api.github.com/repos/$REPO/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+            LATEST_VERSION=$(wget -qO- "https://gh-proxy.com/https://api.github.com/repos/$REPO/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
             if [ ! -z "$LATEST_VERSION" ]; then
                 VERSION="$LATEST_VERSION"
                 echo -e "${GREEN}发现最新版本: $VERSION${NC}"
@@ -140,7 +140,7 @@ else
         fi
     fi
 
-    DOWNLOAD_URL="https://github.com/$REPO/releases/download/$VERSION/$BINARY_NAME"
+    DOWNLOAD_URL="https://gh-proxy.com/https://github.com/$REPO/releases/download/$VERSION/$BINARY_NAME"
 
     echo -e "\n${YELLOW}[3/4] 下载管理工具...${NC}"
     echo -e "${NC}地址: $DOWNLOAD_URL${NC}"

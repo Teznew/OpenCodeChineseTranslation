@@ -441,11 +441,11 @@ func runHelper() {
 			fmt.Println("    方法 3: 官网下载 https://nodejs.org/")
 		case "darwin":
 			fmt.Println("    方法 1: brew install node@20")
-			fmt.Println("    方法 2: 使用 nvm: curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash")
+			fmt.Println("    方法 2: 使用 nvm: curl -o- https://gh-proxy.com/https://raw.githubusercontent.com/nvm-sh/nvm/refs/tags/v0.39.0/install.sh | bash")
 			fmt.Println("            然后: nvm install 20")
 		default:
 			fmt.Println("    方法 1: 使用包管理器 (apt/yum/pacman) 安装 nodejs")
-			fmt.Println("    方法 2: 使用 nvm: curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash")
+			fmt.Println("    方法 2: 使用 nvm: curl -o- https://gh-proxy.com/https://raw.githubusercontent.com/nvm-sh/nvm/refs/tags/v0.39.0/install.sh | bash")
 			fmt.Println("            然后: nvm install 20")
 		}
 		return

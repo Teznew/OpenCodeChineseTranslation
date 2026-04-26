@@ -526,6 +526,6 @@
 
 ## 链接
 
-- [版本对比](https://github.com/Teznew/OpenCodeChineseTranslation/compare)
-- [问题反馈](https://github.com/Teznew/OpenCodeChineseTranslation/issues)
+- [版本对比](https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation/compare)
+- [问题反馈](https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation/issues)
 - [贡献指南](CONTRIBUTING.md)

@@ -79,4 +79,4 @@ case "json":
 
 ---
 
-**提交链接**: https://github.com/anomalyco/opencode/issues/new
+**提交链接**: https://gh-proxy.com/https://github.com/anomalyco/opencode/issues/new
