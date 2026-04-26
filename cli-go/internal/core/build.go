@@ -142,6 +142,74 @@ if (!isCompatible) {
 	return false, nil
 }
 
+// PatchBuildTargetFilter 修复上游 build.ts 默认全目标构建的问题。
+// 当设置 OPENCODE_BUILD_TARGET 时，仅构建请求的平台，避免 CI 误触发 windows-arm64 等未支持目标。
+func (b *Builder) PatchBuildTargetFilter() (bool, error) {
+	scriptPath := filepath.Join(b.buildDir, "script", "build.ts")
+	if !Exists(scriptPath) {
+		return false, nil
+	}
+
+	contentBytes, err := os.ReadFile(scriptPath)
+	if err != nil {
+		return false, err
+	}
+	content := string(contentBytes)
+
+	if strings.Contains(content, "OPENCODE_BUILD_TARGET") {
+		return true, nil
+	}
+
+	flagAnchor := "const skipEmbedWebUi = process.argv.includes(\"--skip-embed-web-ui\")"
+	targetsAnchor := "const targets = singleFlag\n  ? allTargets.filter((item) => {\n      if (item.os !== process.platform || item.arch !== process.arch) {\n        return false\n      }\n\n      // When building for the current platform, prefer a single native binary by default.\n      // Baseline binaries require additional Bun artifacts and can be flaky to download.\n      if (item.avx2 === false) {\n        return baselineFlag\n      }\n\n      // also skip abi-specific builds for the same reason\n      if (item.abi !== undefined) {\n        return false\n      }\n\n      return true\n    })\n  : allTargets"
+
+	if !strings.Contains(content, flagAnchor) || !strings.Contains(content, targetsAnchor) {
+		return false, fmt.Errorf("未找到 build.ts 目标过滤补丁锚点")
+	}
+
+	injectedFlags := flagAnchor + "\nconst requestedTarget = Bun.env.OPENCODE_BUILD_TARGET?.trim()"
+	patchedTargets := `const normalizeTarget = (item: { os: string; arch: "arm64" | "x64" }) =>
+  [item.os === "win32" ? "windows" : item.os, item.arch].join("-")
+
+const targets = requestedTarget
+  ? allTargets.filter((item) => normalizeTarget(item) === requestedTarget && item.avx2 !== false && item.abi === undefined)
+  : singleFlag
+    ? allTargets.filter((item) => {
+        if (item.os !== process.platform || item.arch !== process.arch) {
+          return false
+        }
+
+        // When building for the current platform, prefer a single native binary by default.
+        // Baseline binaries require additional Bun artifacts and can be flaky to download.
+        if (item.avx2 === false) {
+          return baselineFlag
+        }
+
+        // also skip abi-specific builds for the same reason
+        if (item.abi !== undefined) {
+          return false
+        }
+
+        return true
+      })
+    : allTargets
+
+if (requestedTarget && targets.length === 0) {
+  throw new Error(
+    ` + "`" + `No build target matched OPENCODE_BUILD_TARGET=${requestedTarget}` + "`" + `,
+  )
+}`
+
+	content = strings.Replace(content, flagAnchor, injectedFlags, 1)
+	content = strings.Replace(content, targetsAnchor, patchedTargets, 1)
+
+	if err := os.WriteFile(scriptPath, []byte(content), 0644); err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
 // InstallDependencies 安装依赖
 // 上游是 monorepo 结构，需要从仓库根目录安装以解析 workspace 依赖
 func (b *Builder) InstallDependencies(silent bool) error {
@@ -203,6 +271,12 @@ func (b *Builder) Build(platform string, silent bool) error {
 		fmt.Println("  已应用 Bun 版本兼容性修复")
 	}
 
+	if patched, err := b.PatchBuildTargetFilter(); err != nil {
+		fmt.Printf("警告: 构建目标过滤修复失败: %v\n", err)
+	} else if patched && !silent {
+		fmt.Println("  已应用构建目标过滤修复")
+	}
+
 	if err := b.InstallDependencies(silent); err != nil {
 		return err
 	}
@@ -252,6 +326,7 @@ func (b *Builder) Build(platform string, silent bool) error {
 	env := os.Environ()
 	env = append(env, "BUN_TLS_REJECT_UNAUTHORIZED=0")
 	env = append(env, "NODE_TLS_REJECT_UNAUTHORIZED=0")
+	env = append(env, "OPENCODE_BUILD_TARGET="+platform)
 
 	if err := ExecLiveEnv(b.bunPath, args, env); err != nil {
 		return fmt.Errorf("bun 构建脚本执行失败: %w", err)

@@ -15,6 +15,7 @@
   - GitHub Actions 的 `release` / `nightly` 工作流不再构建 Windows ARM64 与 Linux ARM64
   - `cli-go build` / `cli-go package` 现在会校验目标平台，仅允许构建当前支持的目标
   - `cli-go` 自带的 PowerShell / Shell 编译脚本同步移除 Windows ARM64 与 Linux ARM64 产物
+  - 修复跨平台 CI 仍回退到上游 `allTargets` 的问题，避免构建 `windows-arm64`、`linux-arm64`、`*-baseline` 与 `*-musl` 目标
 
 - **Nightly 调度更新** - Nightly 构建改为每天 `01:16` 执行
   - README 与 Release 说明同步更新 Nightly 执行频率
