@@ -110,8 +110,13 @@ func runDownload() {
 		fmt.Println("    1. 网络连接问题（需要访问 GitHub）")
 		fmt.Println("    2. 仓库暂无 Release 发布")
 		fmt.Println("")
-		fmt.Println("  备选方案:")
-		fmt.Printf("    手动下载: %s\n", proxyGitHubURL("https://github.com/"+GitHubRepo+"/releases"))
+		fmt.Println("  备选方案（手动安装 CLI）:")
+		fmt.Printf("    1. 打开: %s\n", proxyGitHubURL("https://github.com/"+GitHubRepo+"/releases"))
+		fmt.Println("    2. 下载与你平台匹配的 opencode-cli 二进制文件")
+		fmt.Println("    3. Windows 放到: %USERPROFILE%\\.opencode-i18n\\bin\\opencode-cli.exe")
+		fmt.Println("    4. macOS/Linux 放到: ~/.opencode-i18n/bin/opencode-cli")
+		fmt.Println("    5. macOS/Linux 执行: chmod +x ~/.opencode-i18n/bin/opencode-cli")
+		fmt.Println("    6. 重新打开终端后执行: opencode-cli --help")
 		return
 	}
 
@@ -153,7 +158,14 @@ func runDownload() {
 			}
 		}
 		fmt.Println("")
-		fmt.Printf("  手动下载: %s\n", proxyGitHubURL("https://github.com/"+GitHubRepo+"/releases/tag/"+release.TagName))
+		fmt.Printf("  手动下载页面: %s\n", proxyGitHubURL("https://github.com/"+GitHubRepo+"/releases/tag/"+release.TagName))
+		fmt.Println("  安装步骤:")
+		fmt.Println("    1. 下载与你平台匹配的预编译 ZIP 包")
+		fmt.Println("    2. 解压后找到 opencode 或 opencode.exe")
+		fmt.Println("    3. 将 opencode 放入 ~/.opencode-i18n/bin 或 %USERPROFILE%\\.opencode-i18n\\bin")
+		fmt.Println("    4. 如需 CLI，请单独下载 opencode-cli 二进制文件并放到同目录")
+		fmt.Println("    5. macOS/Linux 执行: chmod +x ~/.opencode-i18n/bin/opencode")
+		fmt.Println("    6. 重新打开终端并执行 opencode --version 验证")
 		return
 	}
 

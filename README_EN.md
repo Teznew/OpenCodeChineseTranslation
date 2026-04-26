@@ -74,6 +74,53 @@ You can also visit the [Releases page](https://gh-proxy.com/https://github.com/T
 
 > Chinese OpenCode binaries are available as ZIP packages on the [Releases page](https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation/releases/latest).
 
+**Recommended manual CLI installation steps:**
+
+1. Download the matching file for your platform from the table above.
+2. Move it into the standard install location:
+   - Windows: `%USERPROFILE%\.opencode-i18n\bin\opencode-cli.exe`
+   - macOS / Linux: `~/.opencode-i18n/bin/opencode-cli`
+3. On macOS / Linux, make it executable:
+   ```bash
+   chmod +x ~/.opencode-i18n/bin/opencode-cli
+   ```
+4. Add the directory to your PATH:
+   - Windows (PowerShell):
+     ```powershell
+     [Environment]::SetEnvironmentVariable("Path", [Environment]::GetEnvironmentVariable("Path", "User") + ";$env:USERPROFILE\.opencode-i18n\bin", "User")
+     ```
+   - macOS / Linux (bash/zsh):
+     ```bash
+     echo 'export PATH="$HOME/.opencode-i18n/bin:$PATH"' >> ~/.bashrc
+     ```
+     If you use zsh, replace `~/.bashrc` with `~/.zshrc`.
+5. Reopen your terminal and verify the installation:
+   ```bash
+   opencode-cli --help
+   ```
+
+**Recommended manual prebuilt OpenCode installation steps:**
+
+1. Open the [Releases page](https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation/releases/latest) or the [Nightly page](https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation/releases/tag/nightly).
+2. Download the ZIP package matching your platform:
+   - Windows x64: `opencode-zh-CN-<version>-windows-x64.zip`
+   - macOS Apple Silicon: `opencode-zh-CN-<version>-darwin-arm64.zip`
+   - macOS Intel: `opencode-zh-CN-<version>-darwin-x64.zip`
+   - Linux x64: `opencode-zh-CN-<version>-linux-x64.zip`
+3. Extract the ZIP and locate `opencode` or `opencode.exe`.
+4. Move the binary into the standard install location:
+   - Windows: `%USERPROFILE%\.opencode-i18n\bin\opencode.exe`
+   - macOS / Linux: `~/.opencode-i18n/bin/opencode`
+5. On macOS / Linux, make it executable:
+   ```bash
+   chmod +x ~/.opencode-i18n/bin/opencode
+   ```
+6. Reuse the PATH steps above if the directory is not already configured.
+7. Reopen your terminal and verify the installation:
+   ```bash
+   opencode --version
+   ```
+
 ---
 
 ## CLI Commands

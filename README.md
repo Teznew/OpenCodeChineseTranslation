@@ -138,6 +138,53 @@ opencode-cli download
 
 > 💡 **提示**: 汉化版 OpenCode 请在 [Releases 页面](https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation/releases/latest) 下载 ZIP 包。[Nightly 构建](https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation/releases/tag/nightly) 每天 01:16 更新。
 
+**手动安装 CLI 的推荐步骤：**
+
+1. 按平台下载上表对应文件。
+2. 将文件移动到统一目录：
+   - Windows：`%USERPROFILE%\.opencode-i18n\bin\opencode-cli.exe`
+   - macOS / Linux：`~/.opencode-i18n/bin/opencode-cli`
+3. macOS / Linux 需要赋予执行权限：
+   ```bash
+   chmod +x ~/.opencode-i18n/bin/opencode-cli
+   ```
+4. 将目录加入 PATH：
+   - Windows（PowerShell）：
+     ```powershell
+     [Environment]::SetEnvironmentVariable("Path", [Environment]::GetEnvironmentVariable("Path", "User") + ";$env:USERPROFILE\.opencode-i18n\bin", "User")
+     ```
+   - macOS / Linux（bash/zsh）：
+     ```bash
+     echo 'export PATH="$HOME/.opencode-i18n/bin:$PATH"' >> ~/.bashrc
+     ```
+     如果你使用 zsh，请把 `~/.bashrc` 改成 `~/.zshrc`。
+5. 重新打开终端，执行以下命令验证：
+   ```bash
+   opencode-cli --help
+   ```
+
+**手动安装预编译 OpenCode 的推荐步骤：**
+
+1. 打开 [Releases 页面](https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation/releases/latest) 或 [Nightly 页面](https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation/releases/tag/nightly)。
+2. 下载与你平台匹配的 ZIP 包：
+   - Windows x64：`opencode-zh-CN-<version>-windows-x64.zip`
+   - macOS Apple Silicon：`opencode-zh-CN-<version>-darwin-arm64.zip`
+   - macOS Intel：`opencode-zh-CN-<version>-darwin-x64.zip`
+   - Linux x64：`opencode-zh-CN-<version>-linux-x64.zip`
+3. 解压 ZIP 包，取出 `opencode` 或 `opencode.exe`。
+4. 将可执行文件移动到统一目录：
+   - Windows：`%USERPROFILE%\.opencode-i18n\bin\opencode.exe`
+   - macOS / Linux：`~/.opencode-i18n/bin/opencode`
+5. macOS / Linux 需要赋予执行权限：
+   ```bash
+   chmod +x ~/.opencode-i18n/bin/opencode
+   ```
+6. 如果尚未加入 PATH，可复用上面的 PATH 配置步骤。
+7. 重新打开终端后验证：
+   ```bash
+   opencode --version
+   ```
+
 ---
 
 ## 版本说明

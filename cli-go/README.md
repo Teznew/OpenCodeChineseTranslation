@@ -30,6 +30,50 @@ curl -fsSL https://gh-proxy.com/https://raw.githubusercontent.com/Teznew/OpenCod
 
 从 GitHub Releases 页面下载对应平台的二进制文件，解压后将其放入系统 PATH 中即可。
 
+推荐按以下步骤操作：
+
+1. 下载与你平台匹配的 `opencode-cli` 二进制文件。
+2. 将文件移动到：
+   - Windows：`%USERPROFILE%\.opencode-i18n\bin\opencode-cli.exe`
+   - macOS / Linux：`~/.opencode-i18n/bin/opencode-cli`
+3. macOS / Linux 执行：
+   ```bash
+   chmod +x ~/.opencode-i18n/bin/opencode-cli
+   ```
+4. 把目录加入 PATH：
+   - Windows（PowerShell）：
+     ```powershell
+     [Environment]::SetEnvironmentVariable("Path", [Environment]::GetEnvironmentVariable("Path", "User") + ";$env:USERPROFILE\.opencode-i18n\bin", "User")
+     ```
+   - macOS / Linux：
+     ```bash
+     echo 'export PATH="$HOME/.opencode-i18n/bin:$PATH"' >> ~/.bashrc
+     ```
+5. 重新打开终端后验证：
+   ```bash
+   opencode-cli --help
+   ```
+
+如果你还想手动安装预编译 `opencode` 本体，请额外执行：
+
+1. 下载与你平台匹配的 ZIP 包，例如：
+   - `opencode-zh-CN-<version>-windows-x64.zip`
+   - `opencode-zh-CN-<version>-darwin-arm64.zip`
+   - `opencode-zh-CN-<version>-darwin-x64.zip`
+   - `opencode-zh-CN-<version>-linux-x64.zip`
+2. 解压后取出 `opencode` 或 `opencode.exe`。
+3. 将文件移动到：
+   - Windows：`%USERPROFILE%\.opencode-i18n\bin\opencode.exe`
+   - macOS / Linux：`~/.opencode-i18n/bin/opencode`
+4. macOS / Linux 执行：
+   ```bash
+   chmod +x ~/.opencode-i18n/bin/opencode
+   ```
+5. 重新打开终端后验证：
+   ```bash
+   opencode --version
+   ```
+
 ## 🚀 使用
 
 ### 交互式菜单（推荐）
