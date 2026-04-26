@@ -11,7 +11,7 @@ import (
 
 var packageCmd = &cobra.Command{
 	Use:   "package",
-	Short: "打包发布版 (支持六平台)",
+	Short: "打包发布版 (支持 Windows x64 / Linux x64 / macOS)",
 	Run: func(cmd *cobra.Command, args []string) {
 		platform, _ := cmd.Flags().GetString("platform")
 		all, _ := cmd.Flags().GetBool("all")
@@ -34,16 +34,13 @@ var packageCmd = &cobra.Command{
 
 		var platforms []string
 		if all {
-			// v8.5.0+ 支持的全部 6 个平台
-			platforms = []string{
-				"windows-x64",
-				"windows-arm64",
-				"darwin-arm64",
-				"darwin-x64",
-				"linux-x64",
-				"linux-arm64",
-			}
+			// 当前支持的全部目标：Windows x64、Linux x64、macOS Intel/Apple Silicon
+			platforms = core.SupportedBuildPlatforms()
 		} else if platform != "" {
+			if !core.IsSupportedBuildPlatform(platform) {
+				fmt.Printf("错误: 当前仅支持打包这些目标: %v（收到: %s）\n", core.SupportedBuildPlatforms(), platform)
+				return
+			}
 			platforms = []string{platform}
 		} else {
 			// 自动识别当前平台
@@ -62,8 +59,13 @@ var packageCmd = &cobra.Command{
 				targetArch = "x64"
 			}
 
-			// 构建目标名称 (如 windows-x64, linux-arm64)
+			// 构建目标名称 (如 windows-x64, linux-x64)
 			target := fmt.Sprintf("%s-%s", goos, targetArch)
+
+			if !core.IsSupportedBuildPlatform(target) {
+				fmt.Printf("错误: 当前平台 %s 不在支持的打包目标中，支持列表: %v\n", target, core.SupportedBuildPlatforms())
+				return
+			}
 
 			fmt.Printf("提示: 未指定平台，自动识别为: %s\n", target)
 			platforms = []string{target}
@@ -102,6 +104,6 @@ var packageCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(packageCmd)
 	packageCmd.Flags().StringP("platform", "p", "", "Target platform")
-	packageCmd.Flags().Bool("all", false, "Package all platforms")
+	packageCmd.Flags().Bool("all", false, "Package all supported targets")
 	packageCmd.Flags().Bool("skip-binaries", false, "Skip binary packaging")
 }

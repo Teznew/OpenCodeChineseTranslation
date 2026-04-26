@@ -307,9 +307,29 @@ func Truncate(s string, maxLen int) string {
 	return s[:maxLen] + "..."
 }
 
+// SupportedBuildPlatforms 返回当前允许构建/打包的目标列表。
+func SupportedBuildPlatforms() []string {
+	return []string{
+		"windows-x64",
+		"darwin-x64",
+		"darwin-arm64",
+		"linux-x64",
+	}
+}
+
+// IsSupportedBuildPlatform 判断目标是否在当前允许的构建列表中。
+func IsSupportedBuildPlatform(platform string) bool {
+	for _, supported := range SupportedBuildPlatforms() {
+		if platform == supported {
+			return true
+		}
+	}
+	return false
+}
+
 // DetectPlatform 检测当前平台，返回 OpenCode 构建目标格式
 // 返回值如：windows-x64, darwin-arm64, linux-x64
-// 支持的平台：windows-x64, windows-arm64, darwin-x64, darwin-arm64, linux-x64, linux-arm64
+// 返回当前机器的真实平台标识；是否允许构建由 SupportedBuildPlatforms 决定。
 func DetectPlatform() string {
 	osName := runtime.GOOS
 	arch := runtime.GOARCH
@@ -336,6 +356,6 @@ func DetectPlatform() string {
 		}
 	}
 
-	// 默认回退到当前系统-x64
-	return osName + "-x64"
+	// 默认回退到当前系统+架构，尽量保持检测结果真实
+	return osName + "-" + archName
 }

@@ -24,7 +24,7 @@ var buildCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(buildCmd)
-	buildCmd.Flags().StringP("platform", "p", "", "Target platform (windows-x64, darwin-arm64, linux-x64)")
+	buildCmd.Flags().StringP("platform", "p", "", "Target platform (windows-x64, linux-x64, darwin-x64, darwin-arm64)")
 	buildCmd.Flags().BoolP("deploy", "d", true, "Deploy to local bin directory")
 	buildCmd.Flags().Bool("silent", false, "Suppress output")
 }
@@ -37,6 +37,10 @@ func init() {
 func RunBuild(platform string, deploy bool, silent bool) error {
 	if platform == "" {
 		platform = core.DetectPlatform()
+	}
+
+	if !core.IsSupportedBuildPlatform(platform) {
+		return fmt.Errorf("当前仅支持构建这些目标: %v（收到: %s）", core.SupportedBuildPlatforms(), platform)
 	}
 
 	builder, err := core.NewBuilder()
