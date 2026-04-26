@@ -23,6 +23,11 @@
 
 - **仓库地址迁移** - 所有安装入口、下载链接和站点跳转统一切换到 `Teznew/OpenCodeChineseTranslation`
 
+- **代理策略调整** - 将 GitHub 代理改为用户侧可选配置，并恢复 GitHub Actions 直连
+  - `install.ps1` / `install.sh` 支持通过 `OPENCODE_GITHUB_PROXY`、`--proxy` 和 `--no-proxy` 切换下载代理
+  - `opencode-cli download` 支持按命令参数或环境变量切换代理地址
+  - 文档与站点安装命令默认展示代理入口，但 CI 工作流中的源码拉取与上游检查恢复直连 GitHub
+
 ## [8.6.1] - 2026-01-31
 
 ### 🐛 问题修复

@@ -24,6 +24,8 @@ powershell -c "irm https://gh-proxy.com/https://raw.githubusercontent.com/Teznew
 curl -fsSL https://gh-proxy.com/https://raw.githubusercontent.com/Teznew/OpenCodeChineseTranslation/refs/heads/main/install.sh | bash
 ```
 
+默认使用 `gh-proxy.com`。如需切换，可设置环境变量 `OPENCODE_GITHUB_PROXY`，或在 Unix 安装命令后追加 `bash -s -- --no-proxy`；CLI 下载命令也支持 `opencode-cli download --proxy=...` 与 `opencode-cli download --no-proxy`。
+
 ### 手动安装
 
 从 GitHub Releases 页面下载对应平台的二进制文件，解压后将其放入系统 PATH 中即可。

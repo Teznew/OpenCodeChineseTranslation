@@ -18,9 +18,48 @@ import (
 )
 
 const (
-	GitHubAPIURL = "https://gh-proxy.com/https://api.github.com/repos/Teznew/OpenCodeChineseTranslation/releases/latest"
-	GitHubRepo   = "Teznew/OpenCodeChineseTranslation"
+	DefaultGitHubProxy = "https://gh-proxy.com/"
+	GitHubRepo         = "Teznew/OpenCodeChineseTranslation"
 )
+
+var (
+	downloadProxy   = DefaultGitHubProxy
+	downloadNoProxy bool
+)
+
+func getDownloadProxy() string {
+	if downloadNoProxy {
+		return ""
+	}
+	if envProxy, ok := os.LookupEnv("OPENCODE_GITHUB_PROXY"); ok {
+		return envProxy
+	}
+	return downloadProxy
+}
+
+func buildGitHubAPIURL() string {
+	return proxyGitHubURL("https://api.github.com/repos/" + GitHubRepo + "/releases/latest")
+}
+
+func proxyGitHubURL(rawURL string) string {
+	if rawURL == "" {
+		return rawURL
+	}
+	proxyBase := getDownloadProxy()
+	if proxyBase == "" {
+		return rawURL
+	}
+	if strings.HasPrefix(rawURL, proxyBase) {
+		return rawURL
+	}
+	if strings.HasPrefix(rawURL, "https://github.com/") || strings.HasPrefix(rawURL, "https://api.github.com/") || strings.HasPrefix(rawURL, "https://raw.githubusercontent.com/") || strings.HasPrefix(rawURL, "https://gist.githubusercontent.com/") {
+		if strings.HasSuffix(proxyBase, "/") {
+			return proxyBase + rawURL
+		}
+		return proxyBase + "/" + rawURL
+	}
+	return rawURL
+}
 
 // GitHubRelease GitHub Release API 响应结构
 type GitHubRelease struct {
@@ -45,6 +84,8 @@ var downloadCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(downloadCmd)
+	downloadCmd.Flags().StringVar(&downloadProxy, "proxy", DefaultGitHubProxy, "GitHub proxy base URL")
+	downloadCmd.Flags().BoolVar(&downloadNoProxy, "no-proxy", false, "Disable GitHub proxy for this download")
 }
 
 // runDownload 下载预编译版
@@ -70,7 +111,7 @@ func runDownload() {
 		fmt.Println("    2. 仓库暂无 Release 发布")
 		fmt.Println("")
 		fmt.Println("  备选方案:")
-		fmt.Printf("    手动下载: https://gh-proxy.com/https://github.com/%s/releases\n", GitHubRepo)
+		fmt.Printf("    手动下载: %s\n", proxyGitHubURL("https://github.com/"+GitHubRepo+"/releases"))
 		return
 	}
 
@@ -95,7 +136,7 @@ func runDownload() {
 		if strings.HasPrefix(name, "opencode-zh-CN") && 
 		   strings.HasSuffix(name, ".zip") &&
 		   strings.Contains(name, platform) {
-			downloadURL = asset.BrowserDownloadURL
+			downloadURL = proxyGitHubURL(asset.BrowserDownloadURL)
 			fileSize = asset.Size
 			assetName = name
 			break
@@ -112,7 +153,7 @@ func runDownload() {
 			}
 		}
 		fmt.Println("")
-		fmt.Printf("  手动下载: https://gh-proxy.com/https://github.com/%s/releases/tag/%s\n", GitHubRepo, release.TagName)
+		fmt.Printf("  手动下载: %s\n", proxyGitHubURL("https://github.com/"+GitHubRepo+"/releases/tag/"+release.TagName))
 		return
 	}
 
@@ -250,7 +291,7 @@ func runDownload() {
 // getLatestRelease 获取最新 Release 信息
 func getLatestRelease() (*GitHubRelease, error) {
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", GitHubAPIURL, nil)
+	req, err := http.NewRequest("GET", buildGitHubAPIURL(), nil)
 	if err != nil {
 		return nil, err
 	}

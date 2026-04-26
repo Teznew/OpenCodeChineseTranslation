@@ -11,7 +11,20 @@ YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 GRAY='\033[0;90m'
 NC='\033[0m' # No Color
+DEFAULT_GITHUB_PROXY="https://gh-proxy.com/"
+GITHUB_PROXY="${OPENCODE_GITHUB_PROXY-$DEFAULT_GITHUB_PROXY}"
 
+proxy_url() {
+    local url="$1"
+    if [ -z "$GITHUB_PROXY" ]; then
+        printf '%s' "$url"
+        return
+    fi
+    case "$GITHUB_PROXY" in
+        */) printf '%s%s' "$GITHUB_PROXY" "$url" ;;
+        *) printf '%s/%s' "$GITHUB_PROXY" "$url" ;;
+    esac
+}
 echo -e "${CYAN}==============================================${NC}"
 echo -e "${CYAN}   OpenCode 汉化管理工具安装脚本 (v8.6.1)   ${NC}"
 echo -e "${CYAN}==============================================${NC}"
@@ -43,7 +56,7 @@ case "$OS_RAW" in
         ;;
     MINGW*|MSYS*|CYGWIN*)
         echo -e "${RED}✗ 错误: 请使用 PowerShell 安装脚本${NC}"
-        echo -e "${RED}  irm https://cdn.jsdelivr.net/gh/Teznew/OpenCodeChineseTranslation@main/install.ps1 | iex${NC}"
+        echo -e "${RED}  irm $(proxy_url "https://raw.githubusercontent.com/Teznew/OpenCodeChineseTranslation/refs/heads/main/install.ps1") | iex${NC}"
         exit 1
         ;;
     *)
@@ -84,6 +97,14 @@ echo -e "${GREEN}系统: $OS $ARCH${NC}"
 TARGET_VERSION=""
 for arg in "$@"; do
     case $arg in
+        --proxy=*)
+            GITHUB_PROXY="${arg#*=}"
+            shift
+            ;;
+        --no-proxy)
+            GITHUB_PROXY=""
+            shift
+            ;;
         --version=*)
             TARGET_VERSION="${arg#*=}"
             shift
@@ -121,7 +142,7 @@ else
     else
         # 尝试获取最新版本
         if command -v curl >/dev/null 2>&1; then
-            LATEST_VERSION=$(curl -s "https://gh-proxy.com/https://api.github.com/repos/$REPO/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+            LATEST_VERSION=$(curl -s "$(proxy_url "https://api.github.com/repos/$REPO/releases/latest")" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
             if [ ! -z "$LATEST_VERSION" ]; then
                 VERSION="$LATEST_VERSION"
                 echo -e "${GREEN}发现最新版本: $VERSION${NC}"
@@ -130,7 +151,7 @@ else
             fi
         elif command -v wget >/dev/null 2>&1; then
             # wget 的 stdout 输出比较嘈杂，使用 -qO-
-            LATEST_VERSION=$(wget -qO- "https://gh-proxy.com/https://api.github.com/repos/$REPO/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+            LATEST_VERSION=$(wget -qO- "$(proxy_url "https://api.github.com/repos/$REPO/releases/latest")" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
             if [ ! -z "$LATEST_VERSION" ]; then
                 VERSION="$LATEST_VERSION"
                 echo -e "${GREEN}发现最新版本: $VERSION${NC}"
@@ -140,7 +161,7 @@ else
         fi
     fi
 
-    DOWNLOAD_URL="https://gh-proxy.com/https://github.com/$REPO/releases/download/$VERSION/$BINARY_NAME"
+    DOWNLOAD_URL="$(proxy_url "https://github.com/$REPO/releases/download/$VERSION/$BINARY_NAME")"
 
     echo -e "\n${YELLOW}[3/4] 下载管理工具...${NC}"
     echo -e "${NC}地址: $DOWNLOAD_URL${NC}"

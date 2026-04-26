@@ -90,15 +90,16 @@
 
 **Windows (PowerShell)**
 ```powershell
-powershell -c "irm https://cdn.jsdelivr.net/gh/Teznew/OpenCodeChineseTranslation@main/install.ps1 | iex"
+powershell -c "irm https://gh-proxy.com/https://raw.githubusercontent.com/Teznew/OpenCodeChineseTranslation/refs/heads/main/install.ps1 | iex"
 ```
 
 **Linux / macOS**
 ```bash
-curl -fsSL https://cdn.jsdelivr.net/gh/Teznew/OpenCodeChineseTranslation@main/install.sh | bash
+curl -fsSL https://gh-proxy.com/https://raw.githubusercontent.com/Teznew/OpenCodeChineseTranslation/refs/heads/main/install.sh | bash
 ```
 
-> 💡 使用 jsDelivr CDN 加速，解决国内网络问题
+> 💡 默认通过 `gh-proxy.com` 拉取安装脚本与发布资源，适合国内网络环境。
+> 如需直连 GitHub，可在执行前设置 `OPENCODE_GITHUB_PROXY=` 为空；Linux/macOS 也可追加 `bash -s -- --no-proxy`，PowerShell 可先执行 `$env:OPENCODE_GITHUB_PROXY=''`。
 
 ### 2. 使用方法
 

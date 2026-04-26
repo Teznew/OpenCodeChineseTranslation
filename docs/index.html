@@ -613,7 +613,7 @@
                                 </div>
                             </div>
                             <div class="p-5 relative code-block">
-                                <code id="cmd-win" class="text-sm font-mono break-all block pr-20 leading-relaxed" style="color: #5AC8FA;">irm https://cdn.jsdelivr.net/gh/Teznew/OpenCodeChineseTranslation@main/install.ps1 | iex</code>
+                                <code id="cmd-win" class="text-sm font-mono break-all block pr-20 leading-relaxed" style="color: #5AC8FA;">irm https://gh-proxy.com/https://raw.githubusercontent.com/Teznew/OpenCodeChineseTranslation/refs/heads/main/install.ps1 | iex</code>
                                 <button onclick="copyText('cmd-win', this)" class="absolute right-5 top-1/2 -translate-y-1/2 btn-ios ripple glass-tertiary hover:bg-primary text-main px-4 py-2 rounded-xl text-xs font-semibold transition-all">
                                     <i class="fa-regular fa-copy"></i>
                                 </button>
@@ -637,7 +637,7 @@
                                 </div>
                             </div>
                             <div class="p-5 relative code-block">
-                                <code id="cmd-unix" class="text-sm font-mono break-all block pr-20 leading-relaxed" style="color: #FFD60A;">curl -fsSL https://cdn.jsdelivr.net/gh/Teznew/OpenCodeChineseTranslation@main/install.sh | bash</code>
+                                <code id="cmd-unix" class="text-sm font-mono break-all block pr-20 leading-relaxed" style="color: #FFD60A;">curl -fsSL https://gh-proxy.com/https://raw.githubusercontent.com/Teznew/OpenCodeChineseTranslation/refs/heads/main/install.sh | bash</code>
                                 <button onclick="copyText('cmd-unix', this)" class="absolute right-5 top-1/2 -translate-y-1/2 btn-ios ripple glass-tertiary hover:bg-warning text-main px-4 py-2 rounded-xl text-xs font-semibold transition-all">
                                     <i class="fa-regular fa-copy"></i>
                                 </button>
@@ -875,6 +875,8 @@
         let currentSource = 'github';
         let currentChannel = 'stable';
         const repo = 'Teznew/OpenCodeChineseTranslation';
+        const githubProxy = 'https://gh-proxy.com/';
+        const withGitHubProxy = (url) => githubProxy ? `${githubProxy}${url}` : url;
         let releaseData = null;
         let releaseCache = { stable: null, nightly: null };
 
@@ -882,8 +884,8 @@
              if (channel !== 'nightly') {
                  return {
                     github: {
-                        win: `irm https://cdn.jsdelivr.net/gh/Teznew/OpenCodeChineseTranslation@main/install.ps1 | iex`,
-                        unix: `curl -fsSL https://cdn.jsdelivr.net/gh/Teznew/OpenCodeChineseTranslation@main/install.sh | bash`
+                        win: `irm ${withGitHubProxy('https://raw.githubusercontent.com/Teznew/OpenCodeChineseTranslation/refs/heads/main/install.ps1')} | iex`,
+                        unix: `curl -fsSL ${withGitHubProxy('https://raw.githubusercontent.com/Teznew/OpenCodeChineseTranslation/refs/heads/main/install.sh')} | bash`
                     },
                     gitee: {
                         win: `irm https://gitee.com/QtCodeCreators/OpenCodeChineseTranslation/raw/main/install.ps1 | iex`,
@@ -893,8 +895,8 @@
              }
              return {
                 github: {
-                    win: `irm https://cdn.jsdelivr.net/gh/Teznew/OpenCodeChineseTranslation@main/install.ps1 -OutFile $env:TEMP\\opencode-inst.ps1; & $env:TEMP\\opencode-inst.ps1 -Version nightly`,
-                    unix: `curl -fsSL https://cdn.jsdelivr.net/gh/Teznew/OpenCodeChineseTranslation@main/install.sh | bash -s -- --version=nightly`
+                    win: `irm ${withGitHubProxy('https://raw.githubusercontent.com/Teznew/OpenCodeChineseTranslation/refs/heads/main/install.ps1')} -OutFile $env:TEMP\\opencode-inst.ps1; & $env:TEMP\\opencode-inst.ps1 -Version nightly`,
+                    unix: `curl -fsSL ${withGitHubProxy('https://raw.githubusercontent.com/Teznew/OpenCodeChineseTranslation/refs/heads/main/install.sh')} | bash -s -- --version=nightly`
                 },
                 gitee: {
                     win: `irm https://gitee.com/QtCodeCreators/OpenCodeChineseTranslation/raw/main/install.ps1 -OutFile $env:TEMP\\opencode-inst.ps1; & $env:TEMP\\opencode-inst.ps1 -Version nightly`,
@@ -942,7 +944,7 @@
         async function fetchReleaseData(channel) {
             const endpoint = channel === 'stable' ? 'latest' : 'tags/nightly';
             try {
-                const resp = await fetch(`https://gh-proxy.com/https://api.github.com/repos/${repo}/releases/${endpoint}`);
+                const resp = await fetch(withGitHubProxy(`https://api.github.com/repos/${repo}/releases/${endpoint}`));
                 if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
                 const data = await resp.json();
                 releaseCache[channel] = data;

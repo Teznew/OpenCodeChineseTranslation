@@ -50,7 +50,7 @@ jobs:
           echo "=== Checking upstream updates ==="
           
           # 获取上游最新 commit
-          UPSTREAM_SHA=$(git ls-remote https://gh-proxy.com/https://github.com/${{ env.UPSTREAM_REPO }}.git refs/heads/${{ env.UPSTREAM_BRANCH }} | cut -f1)
+          UPSTREAM_SHA=$(git ls-remote https://github.com/${{ env.UPSTREAM_REPO }}.git refs/heads/${{ env.UPSTREAM_BRANCH }} | cut -f1)
           echo "Upstream SHA: $UPSTREAM_SHA"
           
           # 获取当前日期（CST）
@@ -85,7 +85,7 @@ jobs:
             echo "Upstream has new commits, calculating diff..."
             
             # Clone 上游仓库获取详细信息
-            git clone --depth 200 --branch ${{ env.UPSTREAM_BRANCH }} https://gh-proxy.com/https://github.com/${{ env.UPSTREAM_REPO }}.git /tmp/upstream 2>/dev/null || true
+              git clone --depth 200 --branch ${{ env.UPSTREAM_BRANCH }} https://github.com/${{ env.UPSTREAM_REPO }}.git /tmp/upstream 2>/dev/null || true
             
             if [ -d "/tmp/upstream" ]; then
               cd /tmp/upstream
@@ -217,7 +217,7 @@ jobs:
 
       - name: Clone OpenCode source
         run: |
-          git clone --depth 1 --branch ${{ env.UPSTREAM_BRANCH }} https://gh-proxy.com/https://github.com/${{ env.UPSTREAM_REPO }}.git opencode-zh-CN
+          git clone --depth 1 --branch ${{ env.UPSTREAM_BRANCH }} https://github.com/${{ env.UPSTREAM_REPO }}.git opencode-zh-CN
 
       - name: Apply Chinese translation
         env:

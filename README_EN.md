@@ -31,13 +31,15 @@ The new installation scripts download the **Go-based CLI tool** directly, requir
 
 **Windows (PowerShell)**
 ```powershell
-powershell -c "irm https://cdn.jsdelivr.net/gh/Teznew/OpenCodeChineseTranslation@main/install.ps1 | iex"
+powershell -c "irm https://gh-proxy.com/https://raw.githubusercontent.com/Teznew/OpenCodeChineseTranslation/refs/heads/main/install.ps1 | iex"
 ```
 
 **Linux / macOS**
 ```bash
-curl -fsSL https://cdn.jsdelivr.net/gh/Teznew/OpenCodeChineseTranslation@main/install.sh | bash
+curl -fsSL https://gh-proxy.com/https://raw.githubusercontent.com/Teznew/OpenCodeChineseTranslation/refs/heads/main/install.sh | bash
 ```
+
+By default, installation uses `gh-proxy.com`. To bypass it, set `OPENCODE_GITHUB_PROXY=` to an empty value before running the command. On Linux/macOS you can also append `bash -s -- --no-proxy`; in PowerShell, set `$env:OPENCODE_GITHUB_PROXY=''` first.
 
 ### 2. Usage
 
