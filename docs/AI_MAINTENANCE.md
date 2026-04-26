@@ -13,7 +13,7 @@
 |------|------|
 | **项目名称** | OpenCode 中文汉化版 |
 | **原项目** | https://github.com/opencode-ai/opencode |
-| **汉化仓库** | https://github.com/1186258278/OpenCodeChineseTranslation |
+| **汉化仓库** | https://github.com/Teznew/OpenCodeChineseTranslation |
 | **管理工具** | `opencodenpm` (npm 包) |
 | **当前版本** | v7.0 |
 
@@ -161,7 +161,7 @@ opencodenpm package -a               # 打包所有平台
   "supportedCommit": "99a1e73fa1bd5c92c02abd8a20b0e274d5b0d214",
   "maintainer": {
     "name": "CodeCreator",
-    "github": "https://github.com/1186258278/OpenCodeChineseTranslation"
+    "github": "https://github.com/Teznew/OpenCodeChineseTranslation"
   },
   "modules": {
     "dialogs": ["dialogs/dialog-agent.json", ...],
@@ -455,10 +455,10 @@ git push && git push --tags
 | 链接 | 说明 |
 |------|------|
 | [OpenCode 官方](https://github.com/opencode-ai/opencode) | 原项目仓库 |
-| [汉化项目 GitHub](https://github.com/1186258278/OpenCodeChineseTranslation) | 本项目 |
+| [汉化项目 GitHub](https://github.com/Teznew/OpenCodeChineseTranslation) | 本项目 |
 | [汉化项目 Gitee](https://gitee.com/QtCodeCreators/OpenCodeChineseTranslation) | 国内镜像 |
 | [Antigravity 集成](./ANTIGRAVITY_INTEGRATION.md) | 本地 AI 网关配置 |
-| [问题反馈](https://github.com/1186258278/OpenCodeChineseTranslation/issues) | 提交 Issue |
+| [问题反馈](https://github.com/Teznew/OpenCodeChineseTranslation/issues) | 提交 Issue |
 
 ---
 

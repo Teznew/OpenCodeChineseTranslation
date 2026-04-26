@@ -149,7 +149,7 @@ gh workflow run release.yml -f tag_name=v8.4.0
 ### Nightly (自动跟进构建)
 
 *   **文件**: `.github/workflows/nightly.yml`
-*   **触发条件**: 每小时检测上游，累计 ≥5 个新 commit 时自动构建
+*   **触发条件**: 每天 01:16 检测上游，累计 ≥5 个新 commit 时自动构建
 *   **产物**: Nightly 预发布版本，自动跟进上游更新，包含官方更新日志
 
 ```bash
@@ -165,7 +165,7 @@ gh workflow run nightly.yml -f min_commits=3
 
 **Nightly 构建逻辑：**
 
-1. 每小时检查 `anomalyco/opencode` 的 `dev` 分支是否有新 commit
+1. 每天 01:16 检查 `anomalyco/opencode` 的 `dev` 分支是否有新 commit
 2. 与 `.nightly-state` 文件记录的上次构建 commit 对比
 3. 计算新增 commit 数量，≥5 时触发构建
 4. 构建完成后：

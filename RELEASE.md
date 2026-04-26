@@ -16,13 +16,13 @@
 
 - **Windows**: x64
 - **Linux**: x64
-- **macOS**: arm64
+- **macOS**: Intel (x64) / Apple Silicon (arm64)
 
 ## 快速开始
 
 ### 方式一：下载预编译版本（推荐）
 
-1. 从 [Releases](https://github.com/1186258278/OpenCodeChineseTranslation/releases) 下载对应平台的压缩包
+1. 从 [Releases](https://github.com/Teznew/OpenCodeChineseTranslation/releases) 下载对应平台的压缩包
 2. 解压到任意目录
 3. 运行 `opencode` (Windows 为 `opencode.exe`)
 
@@ -83,6 +83,6 @@ opencodenpm package --all
 | 链接 | 说明 |
 |------|------|
 | [Gitee 仓库](https://gitee.com/QtCodeCreators/OpenCodeChineseTranslation) | 国内镜像 |
-| [GitHub 仓库](https://github.com/1186258278/OpenCodeChineseTranslation) | GitHub 主页 |
+| [GitHub 仓库](https://github.com/Teznew/OpenCodeChineseTranslation) | GitHub 主页 |
 | [OpenCode 官方](https://github.com/anomalyco/opencode) | 原项目 |
-| [问题反馈](https://github.com/1186258278/OpenCodeChineseTranslation/issues) | 提交 Issue |
+| [问题反馈](https://github.com/Teznew/OpenCodeChineseTranslation/issues) | 提交 Issue |
