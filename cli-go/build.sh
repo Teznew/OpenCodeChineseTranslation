@@ -1,5 +1,5 @@
 #!/bin/bash
-# OpenCode CLI 跨平台编译脚本
+# OpenCode CLI 多目标编译脚本
 
 set -e
 
@@ -25,17 +25,15 @@ build() {
     echo "    ✓ $OUTPUT"
 }
 
-# Windows
+# Windows x64
 build windows amd64 .exe
-build windows arm64 .exe
 
 # macOS
 build darwin amd64 ""
 build darwin arm64 ""
 
-# Linux
+# Linux x64
 build linux amd64 ""
-build linux arm64 ""
 
 echo ""
 echo "✓ 构建完成!"

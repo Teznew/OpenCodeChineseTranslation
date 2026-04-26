@@ -1,4 +1,4 @@
-# OpenCode CLI 跨平台编译脚本 (PowerShell)
+# OpenCode CLI 多目标编译脚本 (PowerShell)
 
 $ErrorActionPreference = "Stop"
 
@@ -34,17 +34,15 @@ function Build {
     }
 }
 
-# Windows
+# Windows x64
 Build -GOOS "windows" -GOARCH "amd64" -EXT ".exe"
-Build -GOOS "windows" -GOARCH "arm64" -EXT ".exe"
 
 # macOS
 Build -GOOS "darwin" -GOARCH "amd64" -EXT ""
 Build -GOOS "darwin" -GOARCH "arm64" -EXT ""
 
-# Linux
+# Linux x64
 Build -GOOS "linux" -GOARCH "amd64" -EXT ""
-Build -GOOS "linux" -GOARCH "arm64" -EXT ""
 
 # 清理环境变量
 Remove-Item Env:\GOOS -ErrorAction SilentlyContinue

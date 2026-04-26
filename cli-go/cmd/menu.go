@@ -157,7 +157,7 @@ func executeAction(action string) {
 		runDeploy(false)
 
 	case "package-all":
-		fmt.Println("\n▶ 打包六端 (Win/Mac/Linux x64/arm64)...")
+		fmt.Println("\n▶ 打包三端 (Windows x64 / Linux x64 / macOS)...")
 		packageCmd.Run(packageCmd, []string{})
 
 	case "launch":
@@ -175,7 +175,7 @@ func executeAction(action string) {
 
 	case "github":
 		fmt.Println("\n▶ 打开 GitHub 仓库...")
-		openBrowser("https://github.com/1186258278/OpenCodeChineseTranslation")
+		openBrowser("https://github.com/Teznew/OpenCodeChineseTranslation")
 
 	case "env":
 		fmt.Println("\n▶ 检查环境...")
