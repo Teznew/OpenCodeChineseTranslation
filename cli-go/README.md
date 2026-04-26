@@ -5,7 +5,7 @@
 ## ✨ 特性
 
 - **无依赖运行** - 单文件二进制，无需 Node.js/npm
-- **跨平台支持** - Windows/macOS/Linux (x64/ARM64)
+- **跨平台支持** - Windows x64、Linux x64、macOS (Intel/Apple Silicon)
 - **完整功能** - 复刻原 JS 版本的所有命令
 - **交互式菜单** - 美观的 TUI 界面，支持鼠标操作
 - **自动更新** - 支持从 GitHub Releases 自动下载和更新
@@ -16,12 +16,12 @@
 
 **Windows PowerShell:**
 ```powershell
-powershell -c "irm https://raw.githubusercontent.com/1186258278/OpenCodeChineseTranslation/main/install.ps1 | iex"
+powershell -c "irm https://raw.githubusercontent.com/Teznew/OpenCodeChineseTranslation/main/install.ps1 | iex"
 ```
 
 **macOS / Linux:**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/1186258278/OpenCodeChineseTranslation/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Teznew/OpenCodeChineseTranslation/main/install.sh | bash
 ```
 
 ### 手动安装
@@ -85,7 +85,7 @@ opencode-cli fix-bun
 | `apply` | 应用汉化配置到源码 |
 | `verify` | 验证汉化配置完整性 |
 | `build` | 编译构建 OpenCode |
-| `package` | 打包三端发布版 |
+| `package` | 打包 Windows x64 / Linux x64 / macOS Intel/Apple Silicon 发布版 |
 | `deploy` | 部署到系统 PATH，可选创建桌面快捷方式 |
 | `rollback` | 回滚到之前的备份 |
 | `antigravity` | 配置 Antigravity AI 代理 |
