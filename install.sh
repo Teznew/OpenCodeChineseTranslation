@@ -43,7 +43,7 @@ case "$OS_RAW" in
         ;;
     MINGW*|MSYS*|CYGWIN*)
         echo -e "${RED}✗ 错误: 请使用 PowerShell 安装脚本${NC}"
-        echo -e "${RED}  irm https://cdn.jsdelivr.net/gh/1186258278/OpenCodeChineseTranslation@main/install.ps1 | iex${NC}"
+        echo -e "${RED}  irm https://cdn.jsdelivr.net/gh/Teznew/OpenCodeChineseTranslation@main/install.ps1 | iex${NC}"
         exit 1
         ;;
     *)
@@ -112,7 +112,7 @@ if [ -f "$LOCAL_FILE" ] && [ -z "$TARGET_VERSION" ]; then
 else
     # 5. 在线下载
     echo -e "\n${YELLOW}[2/4] 获取版本信息...${NC}"
-    REPO="1186258278/OpenCodeChineseTranslation"
+    REPO="Teznew/OpenCodeChineseTranslation"
     VERSION="v8.7.0" # 默认 fallback
 
     if [ -n "$TARGET_VERSION" ]; then
