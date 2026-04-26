@@ -221,10 +221,10 @@ opencode
 
 ## 🔗 相关链接
 
-- [汉化项目 GitHub](https://github.com/1186258278/OpenCodeChineseTranslation)
+- [汉化项目 GitHub](https://github.com/Teznew/OpenCodeChineseTranslation)
 - [汉化项目 Gitee](https://gitee.com/QtCodeCreators/OpenCodeChineseTranslation)
 - [OpenCode 官方](https://github.com/anomalyco/opencode)
-- [问题反馈](https://github.com/1186258278/OpenCodeChineseTranslation/issues)
+- [问题反馈](https://github.com/Teznew/OpenCodeChineseTranslation/issues)
 
 ---
 
@@ -232,7 +232,7 @@ opencode
 
 1. 首次运行需要配置 API Key
 2. 建议使用终端/命令行运行以获得最佳体验
-3. 如遇问题请查看 [FAQ](https://github.com/1186258278/OpenCodeChineseTranslation#-常见问题) 或提交 Issue
+3. 如遇问题请查看 [FAQ](https://github.com/Teznew/OpenCodeChineseTranslation#-常见问题) 或提交 Issue
 
 ---
 

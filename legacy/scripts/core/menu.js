@@ -191,7 +191,7 @@ async function showMainMenu() {
     { name: '[#] 编译构建', value: 'build', desc: '使用 Bun 编译生成 OpenCode 可执行文件。自动处理多平台构建。' },
     { name: '[<] 回滚备份', value: 'rollback', desc: '回滚到上一次应用汉化前的状态。支持查看备份列表和指定版本回滚。' },
     { name: '[^] 部署命令', value: 'deploy', desc: '将编译好的 opencode 命令部署到系统 PATH，使其在任意终端可用。' },
-    { name: '[=] 打包三端', value: 'package-all', desc: '为 Win/Mac/Linux 平台打包发布版 ZIP 文件，生成 Release Notes 和校验码。' },
+    { name: '[=] 打包三端', value: 'package-all', desc: '为 Windows x64、Linux x64 以及 macOS (Intel/Apple Silicon) 打包发布版 ZIP 文件，生成 Release Notes 和校验码。' },
     { name: '[P] 启动OpenCode', value: 'launch', desc: '直接启动当前已编译好的 OpenCode 程序。支持后台运行模式。' },
     { name: '[A] Antigravity', value: 'antigravity', desc: '配置 Antigravity 本地 AI 代理服务 (Claude/GPT/Gemini)，用于智能体功能。' },
     { name: '[O] Oh-My-OC', value: 'ohmyopencode', desc: '安装 Oh-My-OpenCode 插件，启用智能体、Git 增强、LSP 等高级功能。' },
@@ -263,7 +263,7 @@ async function showMainMenu() {
         '• {bold}Tab键{/}: 切换下方教程板块',
         '• {bold}故障恢复{/}: {yellow}[~] 恢复源码{/} 清除所有修改',
         '• {bold}回滚{/}: {yellow}[<] 回滚备份{/} 还原到汉化前状态',
-        '{dim}项目地址: github.com/1186258278/OpenCodeChineseTranslation{/}'
+        '{dim}项目地址: github.com/Teznew/OpenCodeChineseTranslation{/}'
       ]
     }
   ];

@@ -7,6 +7,21 @@
 
 ---
 
+## [Unreleased]
+
+### 🔧 构建与发布调整
+
+- **构建目标收敛** - 将自动构建与 CLI 默认支持目标统一为 Windows x64、Linux x64、macOS Intel / Apple Silicon
+  - GitHub Actions 的 `release` / `nightly` 工作流不再构建 Windows ARM64 与 Linux ARM64
+  - `cli-go build` / `cli-go package` 现在会校验目标平台，仅允许构建当前支持的目标
+  - `cli-go` 自带的 PowerShell / Shell 编译脚本同步移除 Windows ARM64 与 Linux ARM64 产物
+
+- **Nightly 调度更新** - Nightly 构建改为每天 `01:16` 执行
+  - README 与 Release 说明同步更新 Nightly 执行频率
+  - 下载表与平台说明统一为当前支持范围
+
+- **仓库地址迁移** - 所有安装入口、下载链接和站点跳转统一切换到 `Teznew/OpenCodeChineseTranslation`
+
 ## [8.6.1] - 2026-01-31
 
 ### 🐛 问题修复
@@ -510,6 +525,6 @@
 
 ## 链接
 
-- [版本对比](https://github.com/1186258278/OpenCodeChineseTranslation/compare)
-- [问题反馈](https://github.com/1186258278/OpenCodeChineseTranslation/issues)
+- [版本对比](https://github.com/Teznew/OpenCodeChineseTranslation/compare)
+- [问题反馈](https://github.com/Teznew/OpenCodeChineseTranslation/issues)
 - [贡献指南](CONTRIBUTING.md)
