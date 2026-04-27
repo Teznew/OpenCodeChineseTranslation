@@ -18,50 +18,22 @@ import (
 )
 
 const (
-	DefaultGitHubProxy = "https://gh-proxy.com/"
-	GitHubRepo         = "Teznew/OpenCodeChineseTranslation"
+	GiteaHost = "https://gitea.re-v0.com"
+	GiteaRepo = "Mirror/OpenCodeChineseTranslation"
 )
 
-var (
-	downloadProxy   = DefaultGitHubProxy
-	downloadNoProxy bool
-)
-
-func getDownloadProxy() string {
-	if downloadNoProxy {
-		return ""
-	}
-	if envProxy, ok := os.LookupEnv("OPENCODE_GITHUB_PROXY"); ok {
-		return envProxy
-	}
-	return downloadProxy
+func buildGiteaAPIURL() string {
+	return GiteaHost + "/api/v1/repos/" + GiteaRepo + "/releases/latest"
 }
 
-func buildGitHubAPIURL() string {
-	return proxyGitHubURL("https://api.github.com/repos/" + GitHubRepo + "/releases/latest")
+func buildGiteaReleaseURL(tag string) string {
+	return GiteaHost + "/" + GiteaRepo + "/releases/tag/" + tag
 }
 
-func proxyGitHubURL(rawURL string) string {
-	if rawURL == "" {
-		return rawURL
-	}
-	proxyBase := getDownloadProxy()
-	if proxyBase == "" {
-		return rawURL
-	}
-	if strings.HasPrefix(rawURL, proxyBase) {
-		return rawURL
-	}
-	if strings.HasPrefix(rawURL, "https://github.com/") || strings.HasPrefix(rawURL, "https://api.github.com/") || strings.HasPrefix(rawURL, "https://raw.githubusercontent.com/") || strings.HasPrefix(rawURL, "https://gist.githubusercontent.com/") {
-		if strings.HasSuffix(proxyBase, "/") {
-			return proxyBase + rawURL
-		}
-		return proxyBase + "/" + rawURL
-	}
-	return rawURL
+func buildGiteaReleasesURL() string {
+	return GiteaHost + "/" + GiteaRepo + "/releases"
 }
 
-// GitHubRelease GitHub Release API 响应结构
 type GitHubRelease struct {
 	TagName string `json:"tag_name"`
 	Name    string `json:"name"`
@@ -76,7 +48,7 @@ type GitHubRelease struct {
 var downloadCmd = &cobra.Command{
 	Use:   "download",
 	Short: "下载预编译汉化版 (无需编译环境)",
-	Long:  "Download prebuilt OpenCode Chinese version from GitHub Releases (no compilation required)",
+	Long:  "Download prebuilt OpenCode Chinese version from Gitea mirror (no compilation required)",
 	Run: func(cmd *cobra.Command, args []string) {
 		runDownload()
 	},
@@ -84,8 +56,6 @@ var downloadCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(downloadCmd)
-	downloadCmd.Flags().StringVar(&downloadProxy, "proxy", DefaultGitHubProxy, "GitHub proxy base URL")
-	downloadCmd.Flags().BoolVar(&downloadNoProxy, "no-proxy", false, "Disable GitHub proxy for this download")
 }
 
 // runDownload 下载预编译版
@@ -95,7 +65,7 @@ func runDownload() {
 	fmt.Println("  下载预编译版 OpenCode 汉化版")
 	fmt.Println("══════════════════════════════════════════════════")
 	fmt.Println("")
-	fmt.Println("  无需本地编译环境，直接从 GitHub Releases 下载")
+	fmt.Println("  无需本地编译环境，直接从 Gitea 镜像下载")
 	fmt.Println("  适用于无法安装 Bun/Node.js 或想快速体验的用户")
 	fmt.Println("")
 
@@ -107,11 +77,11 @@ func runDownload() {
 		fmt.Printf("✗ 获取 Release 信息失败: %v\n", err)
 		fmt.Println("")
 		fmt.Println("  可能的原因:")
-		fmt.Println("    1. 网络连接问题（需要访问 GitHub）")
+		fmt.Println("    1. 网络连接问题（需要访问 Gitea）")
 		fmt.Println("    2. 仓库暂无 Release 发布")
 		fmt.Println("")
 		fmt.Println("  备选方案（手动安装 CLI）:")
-		fmt.Printf("    1. 打开: %s\n", proxyGitHubURL("https://github.com/"+GitHubRepo+"/releases"))
+		fmt.Printf("    1. 打开: %s\n", buildGiteaReleasesURL())
 		fmt.Println("    2. 下载与你平台匹配的 opencode-cli 二进制文件")
 		fmt.Println("    3. Windows 放到: %USERPROFILE%\\.opencode-i18n\\bin\\opencode-cli.exe")
 		fmt.Println("    4. macOS/Linux 放到: ~/.opencode-i18n/bin/opencode-cli")
@@ -137,11 +107,10 @@ func runDownload() {
 
 	for _, asset := range release.Assets {
 		name := asset.Name
-		// 匹配包含平台标识的 zip 文件
 		if strings.HasPrefix(name, "opencode-zh-CN") && 
 		   strings.HasSuffix(name, ".zip") &&
 		   strings.Contains(name, platform) {
-			downloadURL = proxyGitHubURL(asset.BrowserDownloadURL)
+			downloadURL = asset.BrowserDownloadURL
 			fileSize = asset.Size
 			assetName = name
 			break
@@ -158,7 +127,7 @@ func runDownload() {
 			}
 		}
 		fmt.Println("")
-		fmt.Printf("  手动下载页面: %s\n", proxyGitHubURL("https://github.com/"+GitHubRepo+"/releases/tag/"+release.TagName))
+		fmt.Printf("  手动下载页面: %s\n", buildGiteaReleaseURL(release.TagName))
 		fmt.Println("  安装步骤:")
 		fmt.Println("    1. 下载与你平台匹配的预编译 ZIP 包")
 		fmt.Println("    2. 解压后找到 opencode 或 opencode.exe")
@@ -303,11 +272,11 @@ func runDownload() {
 // getLatestRelease 获取最新 Release 信息
 func getLatestRelease() (*GitHubRelease, error) {
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", buildGitHubAPIURL(), nil)
+	req, err := http.NewRequest("GET", buildGiteaAPIURL(), nil)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Accept", "application/vnd.github.v3+json")
+	req.Header.Set("Accept", "application/json")
 	req.Header.Set("User-Agent", "OpenCode-CLI")
 
 	resp, err := client.Do(req)
