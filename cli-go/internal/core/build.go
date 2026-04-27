@@ -328,6 +328,17 @@ func (b *Builder) Build(platform string, silent bool) error {
 	env = append(env, "NODE_TLS_REJECT_UNAUTHORIZED=0")
 	env = append(env, "OPENCODE_BUILD_TARGET="+platform)
 
+	// 注入版本号和渠道信息，避免 detached HEAD 构建时 version=0.0.0 和 channel 为空
+	// 上游构建脚本通过 git branch --show-current 获取 channel，
+	// detached HEAD（tag checkout）时返回空字符串导致 preview build
+	info := GetOpencodeInfo()
+	if info.Version != "unknown" && os.Getenv("OPENCODE_VERSION") == "" {
+		env = append(env, "OPENCODE_VERSION="+info.Version)
+	}
+	if os.Getenv("OPENCODE_CHANNEL") == "" {
+		env = append(env, "OPENCODE_CHANNEL=stable")
+	}
+
 	if err := ExecLiveEnv(b.bunPath, args, env); err != nil {
 		return fmt.Errorf("bun 构建脚本执行失败: %w", err)
 	}
