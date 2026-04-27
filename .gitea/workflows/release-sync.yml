@@ -149,14 +149,13 @@ jobs:
           set -euo pipefail
 
           TAG="${{ steps.github-release.outputs.tag_name }}"
-          NAME="${{ steps.github-release.outputs.release_name }}"
+          RELEASE_NAME="${{ steps.github-release.outputs.release_name }}"
           BODY_FILE="/tmp/release-body.txt"
           GITEA_HOST="${{ steps.config.outputs.gitea_host }}"
           GITEA_REPO="${{ steps.config.outputs.gitea_repo }}"
           IS_PRERELEASE="${{ steps.github-release.outputs.is_prerelease }}"
           IS_NIGHTLY="${{ steps.config.outputs.is_nightly }}"
 
-          # Nightly is always published as prerelease
           if [ "$IS_NIGHTLY" = "true" ] || [ "$IS_PRERELEASE" = "true" ]; then
             PRERELEASE_FLAG="true"
           else
@@ -179,8 +178,7 @@ jobs:
           " 2>/dev/null || true)
           fi
 
-          # Build JSON payload (escape body for safe embedding)
-          export TAG NAME RELEASE_NAME BODY_FILE PRERELEASE_FLAG
+          export TAG RELEASE_NAME BODY_FILE PRERELEASE_FLAG
           PAYLOAD=$(python3 -c "
           import json, os
           body = open(os.environ['BODY_FILE']).read()
