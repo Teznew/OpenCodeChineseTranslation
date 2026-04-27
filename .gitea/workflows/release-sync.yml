@@ -26,8 +26,11 @@ jobs:
         run: |
           set -euo pipefail
 
-          # GITEA_HOST: fall back to default when secret is empty
-          GITEA_HOST="${INPUT_GITEA_HOST:-gitea.example.com}"
+          if [ -z "${INPUT_GITEA_HOST}" ]; then
+            echo "::error::GITEA_HOST secret is not configured"
+            exit 1
+          fi
+          GITEA_HOST="${INPUT_GITEA_HOST}"
           echo "gitea_host=${GITEA_HOST}" >> $GITHUB_OUTPUT
 
           # GITEA_REPO: derive from GITEA_REPO_URL secret or default to same repo path
@@ -99,7 +102,7 @@ jobs:
           RELEASE_BODY=$(printf '%s' "$RESPONSE" | python3 -c '
           import sys, json
           data = json.load(sys.stdin)
-          print(data.get("body", ""))
+          sys.stdout.write(data.get("body", ""))
           ')
           IS_PRERELEASE=$(printf '%s' "$RESPONSE" | python3 -c '
           import sys, json
@@ -191,17 +194,21 @@ jobs:
           fi
 
           # Build JSON payload (escape body for safe embedding)
+          export TAG NAME RELEASE_NAME BODY_FILE PRERELEASE_FLAG
           PAYLOAD=$(python3 -c "
-          import json
-          body = open('${BODY_FILE}').read()
+          import json, os
+          body = open(os.environ['BODY_FILE']).read()
           print(json.dumps({
-              'tag_name': '${TAG}',
-              'name': '${NAME}',
+              'tag_name': os.environ['TAG'],
+              'name': os.environ['RELEASE_NAME'],
               'body': body,
               'draft': False,
-              'prerelease': ${PRERELEASE_FLAG},
+              'prerelease': os.environ['PRERELEASE_FLAG'] == 'true',
           }))
-          ")
+          " 2>&1) || {
+            echo "::error::Failed to build release payload"
+            exit 1
+          }
 
           RELEASE_ID=""
           if [ -n "$EXISTING_ID" ]; then
@@ -220,17 +227,20 @@ jobs:
             echo "No existing release found, creating..."
             # Add target_commitish for new releases
             CREATE_PAYLOAD=$(python3 -c "
-          import json
-          body = open('${BODY_FILE}').read()
+          import json, os
+          body = open(os.environ['BODY_FILE']).read()
           print(json.dumps({
-              'tag_name': '${TAG}',
-              'name': '${NAME}',
+              'tag_name': os.environ['TAG'],
+              'name': os.environ['RELEASE_NAME'],
               'body': body,
               'draft': False,
-              'prerelease': ${PRERELEASE_FLAG},
+              'prerelease': os.environ['PRERELEASE_FLAG'] == 'true',
               'target_commitish': 'main',
           }))
-          ")
+          " 2>&1) || {
+              echo "::error::Failed to build create payload"
+              exit 1
+            }
             CREATE_RESP=$(curl -sfL -X POST \
               -H "Authorization: token ${GITEA_TOKEN}" \
               -H "Content-Type: application/json" \
@@ -239,7 +249,17 @@ jobs:
                 echo "::error::Failed to create Gitea release ${TAG}"
                 exit 1
               }
-            RELEASE_ID=$(printf '%s' "$CREATE_RESP" | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])")
+            RELEASE_ID=$(printf '%s' "$CREATE_RESP" | python3 -c "
+          import sys, json
+          data = json.load(sys.stdin)
+          if 'id' not in data:
+              print('FATAL: Gitea create response missing id', file=sys.stderr)
+              sys.exit(1)
+          print(str(data['id']))
+          ") || {
+                echo "::error::Failed to parse Gitea create response"
+                exit 1
+              }
             echo "Created release id=${RELEASE_ID}"
           fi
 
@@ -271,11 +291,12 @@ jobs:
             FILENAME=$(basename "$FILE_PATH")
 
             if [ -n "$EXISTING_ASSETS_JSON" ]; then
-              CONFLICT_ID=$(printf '%s' "$EXISTING_ASSETS_JSON" | python3 -c "
-          import sys, json
+              CONFLICT_ID=$(FILENAME="$FILENAME" printf '%s' "$EXISTING_ASSETS_JSON" | python3 -c "
+          import sys, json, os
+          target = os.environ['FILENAME']
           data = json.load(sys.stdin)
           for a in data:
-              if a.get('name') == '${FILENAME}':
+              if a.get('name') == target:
                   print(str(a['id']))
                   break
           " 2>/dev/null || true)
