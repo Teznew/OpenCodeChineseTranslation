@@ -110,7 +110,9 @@ jobs:
           import sys, json
           data = json.load(sys.stdin)
           for a in data.get("assets", []):
-              print(f"{a[\"name\"]}\t{a[\"browser_download_url\"]}")
+              name = a["name"]
+              url = a["browser_download_url"]
+              print(f"{name}\t{url}")
           ')
 
           echo "tag_name=${TAG_NAME}"      >> $GITHUB_OUTPUT
