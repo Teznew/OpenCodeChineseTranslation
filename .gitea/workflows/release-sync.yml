@@ -18,28 +18,14 @@ jobs:
     name: Mirror Release to Gitea
     runs-on: base
     steps:
-      - name: Resolve Gitea configuration
+      - name: Resolve configuration
         id: config
-        env:
-          INPUT_GITEA_HOST: ${{ secrets.GITEA_HOST }}
-          INPUT_GITEA_REPO_URL: ${{ secrets.GITEA_REPO_URL }}
         run: |
           set -euo pipefail
 
-          if [ -z "${INPUT_GITEA_HOST}" ]; then
-            echo "::error::GITEA_HOST secret is not configured"
-            exit 1
-          fi
-          GITEA_HOST="${INPUT_GITEA_HOST}"
+          GITEA_HOST="${{ github.server_url }}"
+          GITEA_REPO="${{ github.repository }}"
           echo "gitea_host=${GITEA_HOST}" >> $GITHUB_OUTPUT
-
-          # GITEA_REPO: derive from GITEA_REPO_URL secret or default to same repo path
-          if [ -n "${INPUT_GITEA_REPO_URL}" ]; then
-            # Accept either "owner/repo" or a full URL
-            GITEA_REPO="$(printf '%s' "${INPUT_GITEA_REPO_URL}" | sed 's|^https\?://[^/]*/||')"
-          else
-            GITEA_REPO="Teznew/OpenCodeChineseTranslation"
-          fi
           echo "gitea_repo=${GITEA_REPO}" >> $GITHUB_OUTPUT
 
           TAG="${{ inputs.target_release_tag }}"
@@ -182,7 +168,7 @@ jobs:
           EXISTING_ID=""
           CHECK_RESP=$(curl -sfL \
             -H "Authorization: token ${GITEA_TOKEN}" \
-            "https://${GITEA_HOST}/api/v1/repos/${GITEA_REPO}/releases/tags/${TAG}" 2>/dev/null) || true
+            "${GITEA_HOST}/api/v1/repos/${GITEA_REPO}/releases/tags/${TAG}" 2>/dev/null) || true
 
           if [ -n "$CHECK_RESP" ]; then
             EXISTING_ID=$(printf '%s' "$CHECK_RESP" | python3 -c "
@@ -217,7 +203,7 @@ jobs:
               -H "Authorization: token ${GITEA_TOKEN}" \
               -H "Content-Type: application/json" \
               -d "$PAYLOAD" \
-              "https://${GITEA_HOST}/api/v1/repos/${GITEA_REPO}/releases/${EXISTING_ID}" > /dev/null || {
+              "${GITEA_HOST}/api/v1/repos/${GITEA_REPO}/releases/${EXISTING_ID}" > /dev/null || {
                 echo "::error::Failed to update Gitea release ${TAG} (id=${EXISTING_ID})"
                 exit 1
               }
@@ -245,7 +231,7 @@ jobs:
               -H "Authorization: token ${GITEA_TOKEN}" \
               -H "Content-Type: application/json" \
               -d "$CREATE_PAYLOAD" \
-              "https://${GITEA_HOST}/api/v1/repos/${GITEA_REPO}/releases") || {
+              "${GITEA_HOST}/api/v1/repos/${GITEA_REPO}/releases") || {
                 echo "::error::Failed to create Gitea release ${TAG}"
                 exit 1
               }
@@ -281,7 +267,7 @@ jobs:
           EXISTING_ASSETS_JSON=""
           EXISTING_ASSETS_JSON=$(curl -sfL \
             -H "Authorization: token ${GITEA_TOKEN}" \
-            "https://${GITEA_HOST}/api/v1/repos/${GITEA_REPO}/releases/${RELEASE_ID}/assets" 2>/dev/null) || true
+            "${GITEA_HOST}/api/v1/repos/${GITEA_REPO}/releases/${RELEASE_ID}/assets" 2>/dev/null) || true
 
           UPLOADED=0
           FAILED=0
@@ -305,7 +291,7 @@ jobs:
                 echo "Replacing existing asset: ${FILENAME} (id=${CONFLICT_ID})"
                 curl -sfL -X DELETE \
                   -H "Authorization: token ${GITEA_TOKEN}" \
-                  "https://${GITEA_HOST}/api/v1/repos/${GITEA_REPO}/releases/${RELEASE_ID}/assets/${CONFLICT_ID}" > /dev/null 2>&1 || {
+                  "${GITEA_HOST}/api/v1/repos/${GITEA_REPO}/releases/${RELEASE_ID}/assets/${CONFLICT_ID}" > /dev/null 2>&1 || {
                     echo "::warning::Failed to delete old asset ${FILENAME}, will attempt upload anyway"
                   }
               fi
@@ -314,7 +300,7 @@ jobs:
             curl -sfL -X POST \
               -H "Authorization: token ${GITEA_TOKEN}" \
               -F "attachment=@${FILE_PATH}" \
-              "https://${GITEA_HOST}/api/v1/repos/${GITEA_REPO}/releases/${RELEASE_ID}/assets?name=${FILENAME}" > /dev/null || {
+              "${GITEA_HOST}/api/v1/repos/${GITEA_REPO}/releases/${RELEASE_ID}/assets?name=${FILENAME}" > /dev/null || {
                 echo "::error::Failed to upload asset ${FILENAME}"
                 FAILED=$((FAILED + 1))
                 continue
