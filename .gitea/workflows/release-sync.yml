@@ -159,46 +159,79 @@ jobs:
           echo "Mirror fallback order: ${UNIQUE_MIRRORS[*]}"
 
           mkdir -p "${DOWNLOAD_DIR}"
-          ASSET_COUNT=0
-          FAILED_TOTAL=0
 
-          while IFS=$'\t' read -r name url; do
-            [ -z "$name" ] && continue
+          is_priority() {
+            local n="$1"
+            case "$n" in
+              opencode-cli-linux-amd64)           return 0 ;;
+              opencode-zh-CN-v*-linux-x64.zip)    return 0 ;;
+              opencode-i18n-tool-v*.zip)           return 0 ;;
+              *)                                   return 1 ;;
+            esac
+          }
 
-            GITHUB_URL="https://github.com/${GITHUB_REPO}/releases/download/${TAG}/${name}"
-
-            DOWNLOADED=0
+          download_asset() {
+            local name="$1"
+            local GITHUB_URL="https://github.com/${GITHUB_REPO}/releases/download/${TAG}/${name}"
             for mirror in "${UNIQUE_MIRRORS[@]}"; do
-              DL_URL="${mirror}${GITHUB_URL}"
+              local DL_URL="${mirror}${GITHUB_URL}"
               echo "  Trying ${DL_URL}"
               if curl -sfL --connect-timeout 15 --max-time 300 -o "${DOWNLOAD_DIR}/${name}" "${DL_URL}"; then
                 echo "  OK: ${name} via ${mirror}"
-                DOWNLOADED=1
-                break
+                return 0
               else
                 echo "  FAILED: ${mirror}"
               fi
             done
+            return 1
+          }
 
-            if [ "$DOWNLOADED" -eq 0 ]; then
-              echo "::error::All mirrors failed for ${name}"
-              FAILED_TOTAL=$((FAILED_TOTAL + 1))
+          PRIORITY_LIST=()
+          OTHER_LIST=()
+          while IFS=$'\t' read -r name url; do
+            [ -z "$name" ] && continue
+            if is_priority "$name"; then
+              PRIORITY_LIST+=("$name")
             else
-              ASSET_COUNT=$((ASSET_COUNT + 1))
+              OTHER_LIST+=("$name")
             fi
           done <<< "${{ steps.github-release.outputs.asset_list }}"
 
-          echo ""
-          echo "Downloaded ${ASSET_COUNT} assets, ${FAILED_TOTAL} failures"
+          echo "Priority assets: ${PRIORITY_LIST[*]:-none}"
+          echo "Other assets:    ${OTHER_LIST[*]:-none}"
 
-          if [ "$FAILED_TOTAL" -gt 0 ]; then
-            echo "::error::${FAILED_TOTAL} asset(s) could not be downloaded from any mirror"
+          PRIORITY_OK=0
+          PRIORITY_FAIL=0
+          for name in "${PRIORITY_LIST[@]}"; do
+            echo "== PRIORITY: ${name} =="
+            if download_asset "$name"; then
+              PRIORITY_OK=$((PRIORITY_OK + 1))
+            else
+              echo "::error::All mirrors failed for priority asset ${name}"
+              PRIORITY_FAIL=$((PRIORITY_FAIL + 1))
+            fi
+          done
+
+          if [ "$PRIORITY_FAIL" -gt 0 ]; then
+            echo "::error::${PRIORITY_FAIL} priority asset(s) failed — cannot continue"
             exit 1
           fi
-          if [ "$ASSET_COUNT" -eq 0 ]; then
-            echo "::error::No assets downloaded for release — aborting to prevent empty mirror"
-            exit 1
-          fi
+
+          OTHER_OK=0
+          OTHER_FAIL=0
+          for name in "${OTHER_LIST[@]}"; do
+            echo "-- OTHER: ${name} --"
+            if download_asset "$name"; then
+              OTHER_OK=$((OTHER_OK + 1))
+            else
+              echo "::warning::All mirrors failed for ${name} — skipping"
+              OTHER_FAIL=$((OTHER_FAIL + 1))
+            fi
+          done
+
+          TOTAL_OK=$((PRIORITY_OK + OTHER_OK))
+          echo ""
+          echo "=== Download complete: ${TOTAL_OK} OK (${PRIORITY_OK} priority + ${OTHER_OK} other), ${OTHER_FAIL} optional failed ==="
 
       - name: Create or update Gitea release
         id: gitea-release
