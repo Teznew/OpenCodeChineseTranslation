@@ -1,0 +1,312 @@
+name: Mirror GitHub Release to Gitea
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_release_tag:
+        description: 'GitHub release tag to mirror (e.g. nightly, v8.1.0)'
+        required: false
+        type: string
+        default: 'nightly'
+
+env:
+  GITHUB_REPO: Teznew/OpenCodeChineseTranslation
+  DOWNLOAD_DIR: /tmp/release-sync
+
+jobs:
+  mirror-release:
+    name: Mirror Release to Gitea
+    runs-on: base
+    steps:
+      - name: Resolve Gitea configuration
+        id: config
+        env:
+          INPUT_GITEA_HOST: ${{ secrets.GITEA_HOST }}
+          INPUT_GITEA_REPO_URL: ${{ secrets.GITEA_REPO_URL }}
+        run: |
+          set -euo pipefail
+
+          # GITEA_HOST: fall back to default when secret is empty
+          GITEA_HOST="${INPUT_GITEA_HOST:-gitea.example.com}"
+          echo "gitea_host=${GITEA_HOST}" >> $GITHUB_OUTPUT
+
+          # GITEA_REPO: derive from GITEA_REPO_URL secret or default to same repo path
+          if [ -n "${INPUT_GITEA_REPO_URL}" ]; then
+            # Accept either "owner/repo" or a full URL
+            GITEA_REPO="$(printf '%s' "${INPUT_GITEA_REPO_URL}" | sed 's|^https\?://[^/]*/||')"
+          else
+            GITEA_REPO="Teznew/OpenCodeChineseTranslation"
+          fi
+          echo "gitea_repo=${GITEA_REPO}" >> $GITHUB_OUTPUT
+
+          TAG="${{ inputs.target_release_tag }}"
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+
+          if [ "$TAG" = "nightly" ]; then
+            echo "is_nightly=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_nightly=false" >> $GITHUB_OUTPUT
+          fi
+
+          echo "Resolved config: host=${GITEA_HOST} repo=${GITEA_REPO} tag=${TAG}"
+
+      - name: Fetch GitHub release
+        id: github-release
+        run: |
+          set -euo pipefail
+
+          TAG="${{ steps.config.outputs.tag }}"
+          echo "=== Fetching GitHub release tag=${TAG} ==="
+
+          API_URL="https://api.github.com/repos/${GITHUB_REPO}/releases/tags/${TAG}"
+
+          RESPONSE=$(curl -sfL \
+            -H "Accept: application/vnd.github.v3+json" \
+            "${API_URL}") || {
+              echo "::error::GitHub API request failed for tag '${TAG}' — release may not exist"
+              exit 1
+            }
+
+          TAG_NAME=$(printf '%s' "$RESPONSE" | python3 -c '
+          import sys, json
+          data = json.load(sys.stdin)
+          tag = data.get("tag_name", "")
+          if not tag:
+              print("FATAL: tag_name missing from API response", file=sys.stderr)
+              sys.exit(1)
+          print(tag)
+          ')
+          if [ -z "$TAG_NAME" ]; then
+            echo "::error::Could not extract tag_name from GitHub release"
+            exit 1
+          fi
+
+          IS_DRAFT=$(printf '%s' "$RESPONSE" | python3 -c '
+          import sys, json
+          data = json.load(sys.stdin)
+          print("true" if data.get("draft", False) else "false")
+          ')
+          if [ "$IS_DRAFT" = "true" ]; then
+            echo "::error::GitHub release '${TAG}' is a draft — refusing to sync draft releases"
+            exit 1
+          fi
+
+          RELEASE_NAME=$(printf '%s' "$RESPONSE" | python3 -c '
+          import sys, json
+          data = json.load(sys.stdin)
+          print(data.get("name", data.get("tag_name", "")))
+          ')
+          RELEASE_BODY=$(printf '%s' "$RESPONSE" | python3 -c '
+          import sys, json
+          data = json.load(sys.stdin)
+          print(data.get("body", ""))
+          ')
+          IS_PRERELEASE=$(printf '%s' "$RESPONSE" | python3 -c '
+          import sys, json
+          data = json.load(sys.stdin)
+          print("true" if data.get("prerelease", False) else "false")
+          ')
+          ASSETS_JSON=$(printf '%s' "$RESPONSE" | python3 -c '
+          import sys, json
+          data = json.load(sys.stdin)
+          for a in data.get("assets", []):
+              print(f"{a[\"name\"]}\t{a[\"browser_download_url\"]}")
+          ')
+
+          echo "tag_name=${TAG_NAME}"      >> $GITHUB_OUTPUT
+          echo "release_name=${RELEASE_NAME}" >> $GITHUB_OUTPUT
+          echo "is_prerelease=${IS_PRERELEASE}" >> $GITHUB_OUTPUT
+
+          # Multi-line asset list
+          echo "asset_list<<ASSETS_EOF" >> $GITHUB_OUTPUT
+          printf '%s\n' "$ASSETS_JSON"  >> $GITHUB_OUTPUT
+          echo "ASSETS_EOF"             >> $GITHUB_OUTPUT
+
+          # Persist body to file (safe for multi-line)
+          printf '%s' "$RELEASE_BODY" > /tmp/release-body.txt
+
+          echo "Release: tag=${TAG_NAME} name=${RELEASE_NAME} prerelease=${IS_PRERELEASE}"
+          echo "Assets: $(printf '%s\n' "$ASSETS_JSON" | grep -c . || echo 0)"
+
+      - name: Download release assets
+        run: |
+          set -euo pipefail
+          mkdir -p "${DOWNLOAD_DIR}"
+
+          ASSET_COUNT=0
+          while IFS=$'\t' read -r name url; do
+            [ -z "$name" ] && continue
+            echo "Downloading ${name}..."
+            curl -sfL -o "${DOWNLOAD_DIR}/${name}" "${url}" || {
+              echo "::error::Failed to download asset ${name}"
+              exit 1
+            }
+            ASSET_COUNT=$((ASSET_COUNT + 1))
+          done <<< "${{ steps.github-release.outputs.asset_list }}"
+
+          if [ "$ASSET_COUNT" -eq 0 ]; then
+            echo "::error::No assets downloaded for release — aborting to prevent empty mirror"
+            exit 1
+          fi
+          echo "Downloaded ${ASSET_COUNT} assets"
+
+      - name: Create or update Gitea release
+        id: gitea-release
+        env:
+          GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          TAG="${{ steps.github-release.outputs.tag_name }}"
+          NAME="${{ steps.github-release.outputs.release_name }}"
+          BODY_FILE="/tmp/release-body.txt"
+          GITEA_HOST="${{ steps.config.outputs.gitea_host }}"
+          GITEA_REPO="${{ steps.config.outputs.gitea_repo }}"
+          IS_PRERELEASE="${{ steps.github-release.outputs.is_prerelease }}"
+          IS_NIGHTLY="${{ steps.config.outputs.is_nightly }}"
+
+          # Nightly is always published as prerelease
+          if [ "$IS_NIGHTLY" = "true" ] || [ "$IS_PRERELEASE" = "true" ]; then
+            PRERELEASE_FLAG="true"
+          else
+            PRERELEASE_FLAG="false"
+          fi
+
+          echo "=== Syncing release tag=${TAG} to Gitea ==="
+
+          EXISTING_ID=""
+          CHECK_RESP=$(curl -sfL \
+            -H "Authorization: token ${GITEA_TOKEN}" \
+            "https://${GITEA_HOST}/api/v1/repos/${GITEA_REPO}/releases/tags/${TAG}" 2>/dev/null) || true
+
+          if [ -n "$CHECK_RESP" ]; then
+            EXISTING_ID=$(printf '%s' "$CHECK_RESP" | python3 -c "
+          import sys, json
+          data = json.load(sys.stdin)
+          if isinstance(data, dict) and 'id' in data:
+              print(str(data['id']))
+          " 2>/dev/null || true)
+          fi
+
+          # Build JSON payload (escape body for safe embedding)
+          PAYLOAD=$(python3 -c "
+          import json
+          body = open('${BODY_FILE}').read()
+          print(json.dumps({
+              'tag_name': '${TAG}',
+              'name': '${NAME}',
+              'body': body,
+              'draft': False,
+              'prerelease': ${PRERELEASE_FLAG},
+          }))
+          ")
+
+          RELEASE_ID=""
+          if [ -n "$EXISTING_ID" ]; then
+            echo "Found existing release id=${EXISTING_ID}, updating..."
+            curl -sfL -X PATCH \
+              -H "Authorization: token ${GITEA_TOKEN}" \
+              -H "Content-Type: application/json" \
+              -d "$PAYLOAD" \
+              "https://${GITEA_HOST}/api/v1/repos/${GITEA_REPO}/releases/${EXISTING_ID}" > /dev/null || {
+                echo "::error::Failed to update Gitea release ${TAG} (id=${EXISTING_ID})"
+                exit 1
+              }
+            RELEASE_ID="$EXISTING_ID"
+            echo "Updated release id=${RELEASE_ID}"
+          else
+            echo "No existing release found, creating..."
+            # Add target_commitish for new releases
+            CREATE_PAYLOAD=$(python3 -c "
+          import json
+          body = open('${BODY_FILE}').read()
+          print(json.dumps({
+              'tag_name': '${TAG}',
+              'name': '${NAME}',
+              'body': body,
+              'draft': False,
+              'prerelease': ${PRERELEASE_FLAG},
+              'target_commitish': 'main',
+          }))
+          ")
+            CREATE_RESP=$(curl -sfL -X POST \
+              -H "Authorization: token ${GITEA_TOKEN}" \
+              -H "Content-Type: application/json" \
+              -d "$CREATE_PAYLOAD" \
+              "https://${GITEA_HOST}/api/v1/repos/${GITEA_REPO}/releases") || {
+                echo "::error::Failed to create Gitea release ${TAG}"
+                exit 1
+              }
+            RELEASE_ID=$(printf '%s' "$CREATE_RESP" | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])")
+            echo "Created release id=${RELEASE_ID}"
+          fi
+
+          echo "release_id=${RELEASE_ID}" >> $GITHUB_OUTPUT
+
+      - name: Upload or replace release assets
+        env:
+          GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          GITEA_HOST="${{ steps.config.outputs.gitea_host }}"
+          GITEA_REPO="${{ steps.config.outputs.gitea_repo }}"
+          RELEASE_ID="${{ steps.gitea-release.outputs.release_id }}"
+
+          echo "=== Syncing assets for release id=${RELEASE_ID} ==="
+
+          # Fetch current asset list for conflict detection
+          EXISTING_ASSETS_JSON=""
+          EXISTING_ASSETS_JSON=$(curl -sfL \
+            -H "Authorization: token ${GITEA_TOKEN}" \
+            "https://${GITEA_HOST}/api/v1/repos/${GITEA_REPO}/releases/${RELEASE_ID}/assets" 2>/dev/null) || true
+
+          UPLOADED=0
+          FAILED=0
+
+          for FILE_PATH in "${DOWNLOAD_DIR}/"*; do
+            [ ! -f "$FILE_PATH" ] && continue
+            FILENAME=$(basename "$FILE_PATH")
+
+            if [ -n "$EXISTING_ASSETS_JSON" ]; then
+              CONFLICT_ID=$(printf '%s' "$EXISTING_ASSETS_JSON" | python3 -c "
+          import sys, json
+          data = json.load(sys.stdin)
+          for a in data:
+              if a.get('name') == '${FILENAME}':
+                  print(str(a['id']))
+                  break
+          " 2>/dev/null || true)
+
+              if [ -n "$CONFLICT_ID" ]; then
+                echo "Replacing existing asset: ${FILENAME} (id=${CONFLICT_ID})"
+                curl -sfL -X DELETE \
+                  -H "Authorization: token ${GITEA_TOKEN}" \
+                  "https://${GITEA_HOST}/api/v1/repos/${GITEA_REPO}/releases/${RELEASE_ID}/assets/${CONFLICT_ID}" > /dev/null 2>&1 || {
+                    echo "::warning::Failed to delete old asset ${FILENAME}, will attempt upload anyway"
+                  }
+              fi
+            fi
+
+            curl -sfL -X POST \
+              -H "Authorization: token ${GITEA_TOKEN}" \
+              -F "attachment=@${FILE_PATH}" \
+              "https://${GITEA_HOST}/api/v1/repos/${GITEA_REPO}/releases/${RELEASE_ID}/assets?name=${FILENAME}" > /dev/null || {
+                echo "::error::Failed to upload asset ${FILENAME}"
+                FAILED=$((FAILED + 1))
+                continue
+              }
+            UPLOADED=$((UPLOADED + 1))
+            echo "Uploaded: ${FILENAME}"
+          done
+
+          echo ""
+          echo "=== Asset sync complete: ${UPLOADED} uploaded, ${FAILED} failed ==="
+          if [ "$FAILED" -gt 0 ]; then
+            echo "::error::${FAILED} asset(s) failed to upload — release may be incomplete"
+            exit 1
+          fi
+
+      - name: Cleanup temporary files
+        if: always()
+        run: rm -rf "${DOWNLOAD_DIR}" /tmp/release-body.txt

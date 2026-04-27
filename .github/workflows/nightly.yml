@@ -10,23 +10,16 @@ on:
   workflow_dispatch:
     inputs:
       force_build:
-        description: '强制构建（跳过 commit 数量检测）'
+        description: '强制构建（跳过发布标签检测）'
         required: false
         type: boolean
         default: false
-      min_commits:
-        description: '触发构建的最小 commit 数量'
-        required: false
-        type: number
-        default: 5
 
 permissions:
   contents: write
 
 env:
   UPSTREAM_REPO: anomalyco/opencode
-  UPSTREAM_BRANCH: dev
-  MIN_COMMITS_THRESHOLD: 5  # 累计超过此数量才触发构建
 
 jobs:
   check-upstream:
@@ -34,10 +27,13 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       should_build: ${{ steps.check.outputs.should_build }}
+      upstream_tag: ${{ steps.check.outputs.upstream_tag }}
+      upstream_tag_full: ${{ steps.check.outputs.upstream_tag_full }}
       upstream_sha: ${{ steps.check.outputs.upstream_sha }}
       upstream_date: ${{ steps.check.outputs.upstream_date }}
       commit_count: ${{ steps.check.outputs.commit_count }}
       changelog: ${{ steps.check.outputs.changelog }}
+      upstream_version: ${{ steps.check.outputs.upstream_version }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -48,83 +44,115 @@ jobs:
         id: check
         run: |
           echo "=== Checking upstream updates ==="
-          
-          # 获取上游最新 commit
-          UPSTREAM_SHA=$(git ls-remote https://github.com/${{ env.UPSTREAM_REPO }}.git refs/heads/${{ env.UPSTREAM_BRANCH }} | cut -f1)
+
+          API_RESPONSE=$(curl -fsSL "https://api.github.com/repos/${{ env.UPSTREAM_REPO }}/releases/latest")
+          RELEASE_FIELDS=$(API_RESPONSE="$API_RESPONSE" python3 - <<'PY'
+          import json
+          import os
+
+          payload = json.loads(os.environ["API_RESPONSE"])
+          tag = payload.get("tag_name", "")
+          published_at = payload.get("published_at", "")
+          target_commitish = payload.get("target_commitish", "")
+          normalized = tag[1:] if tag.startswith("v") else tag
+          print(tag)
+          print(normalized)
+          print(published_at)
+          print(target_commitish)
+          PY
+          )
+          UPSTREAM_TAG_FULL=$(printf '%s\n' "$RELEASE_FIELDS" | sed -n '1p')
+          UPSTREAM_VERSION=$(printf '%s\n' "$RELEASE_FIELDS" | sed -n '2p')
+          UPSTREAM_DATE=$(printf '%s\n' "$RELEASE_FIELDS" | sed -n '3p')
+          TARGET_COMMITISH=$(printf '%s\n' "$RELEASE_FIELDS" | sed -n '4p')
+
+          if [ -z "$UPSTREAM_TAG_FULL" ] || [ -z "$UPSTREAM_VERSION" ]; then
+            echo "GitHub Releases API did not return a valid tag"
+            exit 1
+          fi
+
+          echo "Latest upstream tag: $UPSTREAM_TAG_FULL"
+          echo "Normalized upstream version: $UPSTREAM_VERSION"
+          echo "Upstream release published at: $UPSTREAM_DATE"
+
+          # 保留上游 fetch 步骤用于日志和 changelog 生成，不参与是否构建的判断
+          UPSTREAM_SHA=$(git ls-remote https://github.com/${{ env.UPSTREAM_REPO }}.git "refs/tags/${UPSTREAM_TAG_FULL}^{}" | cut -f1)
+          if [ -z "$UPSTREAM_SHA" ] && [ -n "$TARGET_COMMITISH" ]; then
+            UPSTREAM_SHA="$TARGET_COMMITISH"
+          fi
           echo "Upstream SHA: $UPSTREAM_SHA"
-          
-          # 获取当前日期（CST）
-          UPSTREAM_DATE=$(TZ='Asia/Shanghai' date +"%Y%m%d-%H%M")
-          echo "Build timestamp: $UPSTREAM_DATE"
-          
-          # 读取上次构建的 commit SHA
-          LAST_SHA=""
+
+          # 读取上次构建的发布标签
+          LAST_STATE=""
           if [ -f ".nightly-state" ]; then
-            LAST_SHA=$(cat .nightly-state | head -1)
-            echo "Last built SHA: $LAST_SHA"
+            IFS= read -r LAST_STATE < .nightly-state || true
+            LAST_STATE=$(printf '%s' "$LAST_STATE" | tr -d '\r')
+            echo "Last build state: $LAST_STATE"
           else
             echo "No previous build state found"
           fi
-          
-          # 获取 commit 数量阈值
-          MIN_COMMITS=${{ github.event.inputs.min_commits || env.MIN_COMMITS_THRESHOLD }}
-          echo "Min commits threshold: $MIN_COMMITS"
-          
-          # 判断是否需要构建
+
           SHOULD_BUILD="false"
           COMMIT_COUNT=0
           CHANGELOG=""
-          
+          STATE_KIND="missing"
+
+          if printf '%s' "$LAST_STATE" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+([-.][0-9A-Za-z.-]+)?$'; then
+            STATE_KIND="tag"
+          elif [ -n "$LAST_STATE" ]; then
+            STATE_KIND="legacy"
+          fi
+
           if [ "${{ github.event.inputs.force_build }}" == "true" ]; then
             echo "Force build requested"
             SHOULD_BUILD="true"
-          elif [ -z "$LAST_SHA" ]; then
+          elif [ "$STATE_KIND" = "missing" ]; then
             echo "First nightly build"
             SHOULD_BUILD="true"
-          elif [ "$UPSTREAM_SHA" != "$LAST_SHA" ]; then
-            echo "Upstream has new commits, calculating diff..."
-            
-            # Clone 上游仓库获取详细信息
-              git clone --depth 200 --branch ${{ env.UPSTREAM_BRANCH }} https://github.com/${{ env.UPSTREAM_REPO }}.git /tmp/upstream 2>/dev/null || true
-            
-            if [ -d "/tmp/upstream" ]; then
-              cd /tmp/upstream
-              
-              # 计算 commit 差异数量
-              COMMIT_COUNT=$(git rev-list --count $LAST_SHA..$UPSTREAM_SHA 2>/dev/null || echo "0")
-              echo "New commits since last build: $COMMIT_COUNT"
-              
-              # 判断是否达到阈值
-              if [ "$COMMIT_COUNT" -ge "$MIN_COMMITS" ]; then
-                echo "Commit count ($COMMIT_COUNT) >= threshold ($MIN_COMMITS), triggering build"
-                SHOULD_BUILD="true"
-                
-                # 生成 changelog (最多 50 条)
-                CHANGELOG=$(git log $LAST_SHA..$UPSTREAM_SHA --format="- %s (\`%h\`)" | head -50)
-              else
-                echo "Commit count ($COMMIT_COUNT) < threshold ($MIN_COMMITS), skipping build"
-              fi
-              
-              cd -
-            else
-              echo "Failed to clone upstream, triggering build anyway"
-              SHOULD_BUILD="true"
-            fi
+          elif [ "$STATE_KIND" = "legacy" ]; then
+            echo "Legacy nightly state detected ($LAST_STATE); treating it as stale pre-tag state"
+            SHOULD_BUILD="true"
+          elif [ "$LAST_STATE" != "$UPSTREAM_TAG_FULL" ]; then
+            echo "New upstream release detected: $LAST_STATE -> $UPSTREAM_TAG_FULL"
+            SHOULD_BUILD="true"
           else
-            echo "No updates detected (SHA unchanged)"
+            echo "No updates detected (same release tag)"
           fi
-          
-          # 如果强制构建但没有 changelog，生成最近的 changelog
-          if [ "$SHOULD_BUILD" == "true" ] && [ -z "$CHANGELOG" ] && [ -d "/tmp/upstream" ]; then
-            cd /tmp/upstream
-            CHANGELOG=$(git log -20 --format="- %s (\`%h\`)")
-            cd -
+
+          # 拉取 tags 生成 commit 风格 changelog，不依赖上游 dev 分支
+          rm -rf /tmp/upstream
+          git clone --depth 200 --no-single-branch https://github.com/${{ env.UPSTREAM_REPO }}.git /tmp/upstream 2>/dev/null || true
+
+          if [ -d "/tmp/upstream" ]; then
+            pushd /tmp/upstream >/dev/null
+
+            git fetch --force --tags origin 2>/dev/null || true
+
+            RESOLVED_UPSTREAM_SHA=$(git rev-list -n 1 "$UPSTREAM_TAG_FULL" 2>/dev/null || true)
+            if [ -n "$RESOLVED_UPSTREAM_SHA" ]; then
+              UPSTREAM_SHA="$RESOLVED_UPSTREAM_SHA"
+            fi
+
+            if [ "$SHOULD_BUILD" = "true" ]; then
+              if [ "$STATE_KIND" = "tag" ]; then
+                COMMIT_COUNT=$(git rev-list --count "$LAST_STATE..$UPSTREAM_TAG_FULL" 2>/dev/null || echo "0")
+                CHANGELOG=$(git log "$LAST_STATE..$UPSTREAM_TAG_FULL" --format="- %s (\`%h\`)" | head -50)
+              else
+                COMMIT_COUNT=$(git log -20 --format='%H' "$UPSTREAM_TAG_FULL" | wc -l | tr -d ' ')
+                CHANGELOG=$(git log -20 --format="- %s (\`%h\`)" "$UPSTREAM_TAG_FULL")
+              fi
+            fi
+
+            popd >/dev/null
           fi
-          
+
           echo "should_build=$SHOULD_BUILD" >> $GITHUB_OUTPUT
+          echo "upstream_tag=$UPSTREAM_TAG_FULL" >> $GITHUB_OUTPUT
+          echo "upstream_tag_full=$UPSTREAM_TAG_FULL" >> $GITHUB_OUTPUT
           echo "upstream_sha=$UPSTREAM_SHA" >> $GITHUB_OUTPUT
           echo "upstream_date=$UPSTREAM_DATE" >> $GITHUB_OUTPUT
           echo "commit_count=$COMMIT_COUNT" >> $GITHUB_OUTPUT
+          echo "upstream_version=$UPSTREAM_VERSION" >> $GITHUB_OUTPUT
           
           # Changelog 可能很长，使用多行输出
           echo "changelog<<EOF" >> $GITHUB_OUTPUT
@@ -217,7 +245,7 @@ jobs:
 
       - name: Clone OpenCode source
         run: |
-          git clone --depth 1 --branch ${{ env.UPSTREAM_BRANCH }} https://github.com/${{ env.UPSTREAM_REPO }}.git opencode-zh-CN
+          git clone --depth 1 --branch ${{ needs.check-upstream.outputs.upstream_tag_full }} https://github.com/${{ env.UPSTREAM_REPO }}.git opencode-zh-CN
 
       - name: Apply Chinese translation
         env:
@@ -247,8 +275,13 @@ jobs:
       - name: Package
         env:
           NIGHTLY_DATE: ${{ needs.check-upstream.outputs.upstream_date }}
+          UPSTREAM_VERSION: ${{ needs.check-upstream.outputs.upstream_version }}
         run: |
-          VERSION="nightly"
+          VERSION="$UPSTREAM_VERSION"
+          if [ -z "$VERSION" ]; then
+            echo "Missing upstream version"
+            exit 1
+          fi
           PLATFORM=${{ matrix.platform }}
           PACKAGE_NAME="opencode-zh-CN-${VERSION}-${PLATFORM}"
           
@@ -315,8 +348,15 @@ jobs:
           ls -la dist/ || true
 
       - name: Package i18n tool
+        env:
+          UPSTREAM_VERSION: ${{ needs.check-upstream.outputs.upstream_version }}
         run: |
-          zip -r dist/opencode-i18n-tool-nightly.zip \
+          if [ -z "$UPSTREAM_VERSION" ]; then
+            echo "Missing upstream version"
+            exit 1
+          fi
+
+          zip -r dist/opencode-i18n-tool-${UPSTREAM_VERSION}.zip \
             cli-go/ \
             install.ps1 \
             install.sh \
@@ -329,6 +369,8 @@ jobs:
         env:
           NIGHTLY_DATE: ${{ needs.check-upstream.outputs.upstream_date }}
           UPSTREAM_SHA: ${{ needs.check-upstream.outputs.upstream_sha }}
+          UPSTREAM_TAG_FULL: ${{ needs.check-upstream.outputs.upstream_tag_full }}
+          UPSTREAM_VERSION: ${{ needs.check-upstream.outputs.upstream_version }}
           COMMIT_COUNT: ${{ needs.check-upstream.outputs.commit_count }}
           CHANGELOG: ${{ needs.check-upstream.outputs.changelog }}
         run: |
@@ -346,28 +388,31 @@ jobs:
           |------|-----|
           EOF
           
-          echo "| 上游分支 | \`${{ env.UPSTREAM_BRANCH }}\` |" >> release_notes.md
+          echo "| 上游 Release Tag | [\`${UPSTREAM_TAG_FULL}\`](https://gh-proxy.com/https://github.com/${{ env.UPSTREAM_REPO }}/releases/tag/${UPSTREAM_TAG_FULL}) |" >> release_notes.md
           echo "| 上游 Commit | [\`${UPSTREAM_SHA:0:8}\`](https://gh-proxy.com/https://github.com/${{ env.UPSTREAM_REPO }}/commit/$UPSTREAM_SHA) |" >> release_notes.md
+          echo "| 上游版本 | \`${UPSTREAM_VERSION}\` |" >> release_notes.md
+          echo "| 构建版本 | \`opencode-zh-CN-${UPSTREAM_VERSION}\` |" >> release_notes.md
           echo "| 本次包含 Commits | ${COMMIT_COUNT:-unknown} |" >> release_notes.md
+          echo "| 上游发布时间 | \`${NIGHTLY_DATE}\` |" >> release_notes.md
           echo "| 构建时间 | $(TZ='Asia/Shanghai' date +"%Y-%m-%d %H:%M CST") |" >> release_notes.md
           
-          cat >> release_notes.md << 'EOF'
+          cat >> release_notes.md << EOF
           
           ---
           
           ### 📦 下载
           
-          | 平台 | 管理工具 (CLI) | 汉化版 OpenCode |
-          |------|----------------|-----------------|
-          | Windows x64 | `opencode-cli-windows-amd64.exe` | `opencode-zh-CN-nightly-windows-x64.zip` |
-          | macOS Apple Silicon | `opencode-cli-darwin-arm64` | `opencode-zh-CN-nightly-darwin-arm64.zip` |
-          | macOS Intel | `opencode-cli-darwin-amd64` | `opencode-zh-CN-nightly-darwin-x64.zip` |
-          | Linux x64 | `opencode-cli-linux-amd64` | `opencode-zh-CN-nightly-linux-x64.zip` |
-          
-          ---
-          
-          ### 📝 OpenCode 官方更新日志
-          
+            | 平台 | 管理工具 (CLI) | 汉化版 OpenCode |
+            |------|----------------|-----------------|
+            | Windows x64 | `opencode-cli-windows-amd64.exe` | `opencode-zh-CN-${UPSTREAM_VERSION}-windows-x64.zip` |
+            | macOS Apple Silicon | `opencode-cli-darwin-arm64` | `opencode-zh-CN-${UPSTREAM_VERSION}-darwin-arm64.zip` |
+            | macOS Intel | `opencode-cli-darwin-amd64` | `opencode-zh-CN-${UPSTREAM_VERSION}-darwin-x64.zip` |
+            | Linux x64 | `opencode-cli-linux-amd64` | `opencode-zh-CN-${UPSTREAM_VERSION}-linux-x64.zip` |
+           
+           ---
+           
+           ### 📝 OpenCode 官方更新日志
+           
           以下是本次构建包含的上游更新：
           
           EOF
@@ -382,13 +427,13 @@ jobs:
           
           ---
           
-          ### 🔄 自动更新机制
-          
-          - **检测频率**: 每天 01:16 检测一次上游更新
-          - **触发条件**: 累计 ≥5 个新 commit 时自动构建
-          - **更新方式**: 固定 `nightly` tag，每次构建覆盖更新
-          
-          > 💡 此 Release 会持续更新，下载链接始终指向最新构建。
+           ### 🔄 自动更新机制
+           
+           - **检测频率**: 每天 01:16 检测一次上游更新
+           - **触发条件**: 上游发布新的正式 Release tag 时自动构建
+           - **更新方式**: 固定 `nightly` tag，每次构建覆盖更新
+           
+           > 💡 此 Release 会持续更新，下载链接始终指向最新构建。
           EOF
           
           echo "=== Generated Release Notes ==="
@@ -420,10 +465,11 @@ jobs:
 
       - name: Update nightly state
         env:
-          UPSTREAM_SHA: ${{ needs.check-upstream.outputs.upstream_sha }}
+          UPSTREAM_TAG_FULL: ${{ needs.check-upstream.outputs.upstream_tag_full }}
+          UPSTREAM_VERSION: ${{ needs.check-upstream.outputs.upstream_version }}
         run: |
-          echo "$UPSTREAM_SHA" > .nightly-state
-          echo "Updated .nightly-state with SHA: $UPSTREAM_SHA"
+          echo "$UPSTREAM_TAG_FULL" > .nightly-state
+          echo "Updated .nightly-state with tag: $UPSTREAM_TAG_FULL"
           
           # 提交状态文件
           git config user.name "github-actions[bot]"
@@ -431,8 +477,8 @@ jobs:
           git add .nightly-state
           git commit -m "chore: update nightly build state [skip ci]
 
-          Upstream: ${{ env.UPSTREAM_REPO }}@${UPSTREAM_SHA:0:8}
-          Commits: ${{ needs.check-upstream.outputs.commit_count }}" || echo "No changes to commit"
+          Upstream release: ${UPSTREAM_TAG_FULL}
+          Version: ${UPSTREAM_VERSION}" || echo "No changes to commit"
           git push || echo "Push failed, state will be updated on next run"
 
   notify-skip:
@@ -443,12 +489,11 @@ jobs:
     steps:
       - name: Report status
         env:
-          COMMIT_COUNT: ${{ needs.check-upstream.outputs.commit_count }}
+          UPSTREAM_TAG_FULL: ${{ needs.check-upstream.outputs.upstream_tag_full }}
         run: |
           echo "=== Nightly Build Skipped ==="
-          echo "Reason: Not enough new commits"
-          echo "Current new commits: ${COMMIT_COUNT:-0}"
-          echo "Threshold: ${{ env.MIN_COMMITS_THRESHOLD }}"
+          echo "Reason: No updates detected (same release tag)"
+          echo "Current release tag: ${UPSTREAM_TAG_FULL}"
           echo ""
-          echo "Build will trigger when upstream has ≥${{ env.MIN_COMMITS_THRESHOLD }} new commits."
+          echo "Build will trigger when upstream publishes a different release tag."
           echo "You can also manually trigger with 'force_build=true' to skip this check."

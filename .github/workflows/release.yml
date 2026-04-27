@@ -10,6 +10,10 @@ on:
         description: 'Tag name for release (e.g., v8.1.0)'
         required: true
         type: string
+      upstream_tag:
+        description: 'Upstream release tag (e.g., v1.14.28). If blank, defaults to latest formal release.'
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -17,6 +21,9 @@ permissions:
 env:
   # 使用手动输入或 git tag
   TAG_NAME: ${{ github.event.inputs.tag_name || github.ref_name }}
+  # 上游 OpenCode 仓库信息
+  UPSTREAM_REPO: anomalyco/opencode
+  UPSTREAM_TAG: ${{ github.event.inputs.upstream_tag }}
 
 jobs:
   build-cli:
@@ -66,6 +73,8 @@ jobs:
     name: Build OpenCode Chinese
     runs-on: ubuntu-latest
     needs: build-cli  # 需要先编译 CLI
+    outputs:
+      upstream_tag: ${{ steps.resolve.outputs.upstream_tag }}
     strategy:
       matrix:
         include:
@@ -99,9 +108,33 @@ jobs:
           cd cli-go
           go build -o ../opencode-cli .
 
+      - name: Resolve upstream source tag
+        id: resolve
+        run: |
+          INPUT_UPSTREAM_TAG="${{ env.UPSTREAM_TAG }}"
+
+          if [ -n "$INPUT_UPSTREAM_TAG" ]; then
+            echo "Using provided upstream tag: $INPUT_UPSTREAM_TAG"
+            echo "upstream_tag=$INPUT_UPSTREAM_TAG" >> "$GITHUB_OUTPUT"
+          else
+            echo "No upstream tag provided, fetching latest release..."
+            RESPONSE=$(curl -fsSL "https://api.github.com/repos/${{ env.UPSTREAM_REPO }}/releases/latest")
+            LATEST_TAG=$(python3 -c 'import json,sys; print(json.load(sys.stdin)["tag_name"])' <<< "$RESPONSE")
+
+            if [ -z "$LATEST_TAG" ]; then
+              echo "Failed to resolve upstream release tag" >&2
+              exit 1
+            fi
+
+            echo "Resolved latest release tag: $LATEST_TAG"
+            echo "upstream_tag=$LATEST_TAG" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Clone OpenCode source
         run: |
-          git clone --depth 1 --branch dev https://github.com/anomalyco/opencode.git opencode-zh-CN
+          UPSTREAM_TAG="${{ steps.resolve.outputs.upstream_tag }}"
+          echo "Cloning with upstream tag: $UPSTREAM_TAG"
+          git clone --depth 1 --branch $UPSTREAM_TAG https://github.com/anomalyco/opencode.git opencode-zh-CN
 
       - name: Apply Chinese translation
         env:
@@ -206,12 +239,22 @@ jobs:
       - name: Generate Release Notes
         run: |
           VERSION=${{ env.TAG_NAME }}
+          UPSTREAM_TAG="${{ needs.build-opencode.outputs.upstream_tag }}"
           TIMESTAMP="${{ steps.date.outputs.timestamp }}"
           
           cat > release_notes.md << EOF
           ## OpenCode 中文汉化版 ${{ env.TAG_NAME }}
           
           > 🕒 **更新时间**: ${TIMESTAMP}
+          > 🏷️ **仓库 Release Tag**: $VERSION
+          > 🔗 **上游源码 Tag**: $UPSTREAM_TAG
+           
+          ### 📦 版本映射
+           
+          | 类型 | Tag |
+          |------|-----|
+          | 本仓库 Release | $VERSION |
+          | 上游源码 Release | $UPSTREAM_TAG |
           
           ### 📦 下载说明
           
@@ -236,7 +279,8 @@ jobs:
           
           ### 📝 更新日志
           
-          详见 [CHANGELOG.md](https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation/blob/main/CHANGELOG.md)
+          本仓库发布标签 **$VERSION** 对应的上游源码标签为 **$UPSTREAM_TAG**，本汉化版基于该上游正式版构建。
+          详细更新日志详见 [CHANGELOG.md](https://gh-proxy.com/https://github.com/Teznew/OpenCodeChineseTranslation/blob/main/CHANGELOG.md)
           EOF
 
       - name: Create Release
