@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 
 	"opencode-cli/internal/core"
 
@@ -18,30 +19,45 @@ import (
 )
 
 const (
-	GiteaHost = "https://gitea.re-v0.com"
 	GiteaRepo = "Mirror/OpenCodeChineseTranslation"
 )
 
-func buildGiteaAPIURL() string {
-	return GiteaHost + "/api/v1/repos/" + GiteaRepo + "/releases/latest"
+var giteaHosts = []string{
+	"http://192.168.2.7:23000",
+	"http://10.1.1.7:23000",
+	"http://10.10.10.7:23000",
+	"https://gitea.re-v0.com",
 }
 
-func buildGiteaReleaseURL(tag string) string {
-	return GiteaHost + "/" + GiteaRepo + "/releases/tag/" + tag
+func getGiteaCredentials() (username, token string, ok bool) {
+	username = os.Getenv("GITEA_USER")
+	token = os.Getenv("GITEA_TOKEN")
+	return username, token, username != "" && token != ""
 }
 
-func buildGiteaReleasesURL() string {
-	return GiteaHost + "/" + GiteaRepo + "/releases"
+func buildGiteaAPIURL(host string) string {
+	return host + "/api/v1/repos/" + GiteaRepo + "/releases/latest"
 }
 
-type GitHubRelease struct {
+func buildGiteaReleaseURL(host, tag string) string {
+	return host + "/" + GiteaRepo + "/releases/tag/" + tag
+}
+
+func buildGiteaReleasesURL(host string) string {
+	return host + "/" + GiteaRepo + "/releases"
+}
+
+func buildAssetDownloadURL(host, tag, name string) string {
+	return host + "/" + GiteaRepo + "/releases/download/" + tag + "/" + name
+}
+
+type GiteaRelease struct {
 	TagName string `json:"tag_name"`
 	Name    string `json:"name"`
 	Body    string `json:"body"`
 	Assets  []struct {
-		Name               string `json:"name"`
-		BrowserDownloadURL string `json:"browser_download_url"`
-		Size               int64  `json:"size"`
+		Name string `json:"name"`
+		Size int64  `json:"size"`
 	} `json:"assets"`
 }
 
@@ -58,7 +74,6 @@ func init() {
 	rootCmd.AddCommand(downloadCmd)
 }
 
-// runDownload 下载预编译版
 func runDownload() {
 	fmt.Println("")
 	fmt.Println("══════════════════════════════════════════════════")
@@ -69,55 +84,78 @@ func runDownload() {
 	fmt.Println("  适用于无法安装 Bun/Node.js 或想快速体验的用户")
 	fmt.Println("")
 
-	// 1. 获取最新 Release 信息
+	username, token, hasCreds := getGiteaCredentials()
+	if !hasCreds {
+		fmt.Println("  ⚠ 未检测到 Gitea 认证信息 (GITEA_USER / GITEA_TOKEN)")
+		fmt.Println("  将尝试匿名访问，部分节点可能需要认证才能下载")
+		fmt.Println("")
+		fmt.Println("  配置方法 (添加到 ~/.bashrc 或 ~/.zshrc):")
+		fmt.Println("    export GITEA_USER=<你的用户名>")
+		fmt.Println("    export GITEA_TOKEN=<你的访问令牌>")
+		fmt.Println("")
+		fmt.Println("  获取令牌: Gitea → 设置 → 应用 → 管理 Access Token")
+		fmt.Println("")
+		fmt.Printf("  示例 (带认证下载):\n")
+		fmt.Printf("    curl -u '$GITEA_USER:$GITEA_TOKEN' -LO %s/%s/releases/download/nightly/opencode-zh-CN-linux-x64.zip\n",
+			giteaHosts[len(giteaHosts)-1], GiteaRepo)
+		fmt.Println("")
+	} else {
+		fmt.Printf("  认证用户: %s\n", username)
+		fmt.Println("")
+	}
+
 	fmt.Println("▶ 正在获取最新版本信息...")
 
-	release, err := getLatestRelease()
-	if err != nil {
-		fmt.Printf("✗ 获取 Release 信息失败: %v\n", err)
+	var release *GiteaRelease
+	var activeHost string
+	for _, host := range giteaHosts {
+		r, err := getLatestRelease(host, username, token)
+		if err != nil {
+			fmt.Printf("  ✗ %s — %v\n", host, err)
+			continue
+		}
+		release = r
+		activeHost = host
+		fmt.Printf("  ✓ 已连接: %s\n", host)
+		break
+	}
+
+	if release == nil {
 		fmt.Println("")
-		fmt.Println("  可能的原因:")
-		fmt.Println("    1. 网络连接问题（需要访问 Gitea）")
-		fmt.Println("    2. 仓库暂无 Release 发布")
+		fmt.Println("✗ 所有 Gitea 节点均无法连接")
 		fmt.Println("")
-		fmt.Println("  备选方案（手动安装 CLI）:")
-		fmt.Printf("    1. 打开: %s\n", buildGiteaReleasesURL())
-		fmt.Println("    2. 下载与你平台匹配的 opencode-cli 二进制文件")
-		fmt.Println("    3. Windows 放到: %USERPROFILE%\\.opencode-i18n\\bin\\opencode-cli.exe")
-		fmt.Println("    4. macOS/Linux 放到: ~/.opencode-i18n/bin/opencode-cli")
-		fmt.Println("    5. macOS/Linux 执行: chmod +x ~/.opencode-i18n/bin/opencode-cli")
-		fmt.Println("    6. 重新打开终端后执行: opencode-cli --help")
+		fmt.Println("  Gitea 节点（按优先级）:")
+		for _, h := range giteaHosts {
+			fmt.Printf("    - %s\n", h)
+		}
+		fmt.Println("")
+		fmt.Println("  请检查:")
+		fmt.Println("    1. 网络是否可达以上任一节点")
+		fmt.Println("    2. GITEA_USER / GITEA_TOKEN 是否正确")
+		fmt.Println("    3. 令牌是否有仓库读取权限")
 		return
 	}
 
 	fmt.Printf("✓ 最新版本: %s\n", release.TagName)
 	fmt.Println("")
 
-	// 2. 匹配当前平台的资源
 	platform := core.DetectPlatform()
-	
-	// 文件名格式可能是：
-	//   opencode-zh-CN-windows-x64.zip (无版本号)
-	//   opencode-zh-CN-v8.1.0-windows-x64.zip (有版本号)
-	// 所以使用模糊匹配
 
-	var downloadURL string
 	var fileSize int64
 	var assetName string
 
 	for _, asset := range release.Assets {
 		name := asset.Name
-		if strings.HasPrefix(name, "opencode-zh-CN") && 
-		   strings.HasSuffix(name, ".zip") &&
-		   strings.Contains(name, platform) {
-			downloadURL = asset.BrowserDownloadURL
+		if strings.HasPrefix(name, "opencode-zh-CN") &&
+			strings.HasSuffix(name, ".zip") &&
+			strings.Contains(name, platform) {
 			fileSize = asset.Size
 			assetName = name
 			break
 		}
 	}
 
-	if downloadURL == "" {
+	if assetName == "" {
 		fmt.Printf("✗ 未找到适用于当前平台的预编译包: %s\n", platform)
 		fmt.Println("")
 		fmt.Println("  可用的预编译包:")
@@ -127,14 +165,7 @@ func runDownload() {
 			}
 		}
 		fmt.Println("")
-		fmt.Printf("  手动下载页面: %s\n", buildGiteaReleaseURL(release.TagName))
-		fmt.Println("  安装步骤:")
-		fmt.Println("    1. 下载与你平台匹配的预编译 ZIP 包")
-		fmt.Println("    2. 解压后找到 opencode 或 opencode.exe")
-		fmt.Println("    3. 将 opencode 放入 ~/.opencode-i18n/bin 或 %USERPROFILE%\\.opencode-i18n\\bin")
-		fmt.Println("    4. 如需 CLI，请单独下载 opencode-cli 二进制文件并放到同目录")
-		fmt.Println("    5. macOS/Linux 执行: chmod +x ~/.opencode-i18n/bin/opencode")
-		fmt.Println("    6. 重新打开终端并执行 opencode --version 验证")
+		fmt.Printf("  手动下载页面: %s\n", buildGiteaReleaseURL(activeHost, release.TagName))
 		return
 	}
 
@@ -143,7 +174,6 @@ func runDownload() {
 	fmt.Printf("  大小: %.2f MB\n", float64(fileSize)/(1024*1024))
 	fmt.Println("")
 
-	// 3. 确认下载
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Print("是否下载并安装? [Y/n]: ")
 	answer, _ := reader.ReadString('\n')
@@ -153,9 +183,8 @@ func runDownload() {
 		return
 	}
 
-	// 4. 创建临时目录
 	tempDir := filepath.Join(os.TempDir(), "opencode-download")
-	os.RemoveAll(tempDir) // 清理旧的临时文件
+	os.RemoveAll(tempDir)
 	if err := os.MkdirAll(tempDir, 0755); err != nil {
 		fmt.Printf("✗ 创建临时目录失败: %v\n", err)
 		return
@@ -164,23 +193,34 @@ func runDownload() {
 
 	zipPath := filepath.Join(tempDir, assetName)
 
-	// 5. 下载文件
 	fmt.Println("")
 	fmt.Println("▶ 正在下载...")
 
-	if err := downloadFile(downloadURL, zipPath); err != nil {
-		fmt.Printf("✗ 下载失败: %v\n", err)
+	downloaded := false
+	for _, host := range giteaHosts {
+		url := buildAssetDownloadURL(host, release.TagName, assetName)
+		fmt.Printf("  尝试: %s\n", host)
+		if err := downloadFileWithAuth(url, zipPath, username, token); err != nil {
+			fmt.Printf("  ✗ 失败: %v\n", err)
+			continue
+		}
+		downloaded = true
+		break
+	}
+
+	if !downloaded {
+		fmt.Println("")
+		fmt.Println("✗ 所有节点下载均失败")
 		fmt.Println("")
 		fmt.Println("  可能的解决方案:")
 		fmt.Println("    1. 检查网络连接")
-		fmt.Println("    2. 配置代理或使用 VPN")
-		fmt.Printf("    3. 手动下载: %s\n", downloadURL)
+		fmt.Println("    2. 确认 GITEA_TOKEN 有下载权限")
+		fmt.Printf("    3. 手动下载页面: %s\n", buildGiteaReleasesURL(activeHost))
 		return
 	}
 
 	fmt.Println("✓ 下载完成")
 
-	// 6. 解压文件
 	fmt.Println("")
 	fmt.Println("▶ 正在解压...")
 
@@ -192,7 +232,6 @@ func runDownload() {
 
 	fmt.Println("✓ 解压完成")
 
-	// 7. 查找可执行文件
 	exeName := "opencode"
 	if runtime.GOOS == "windows" {
 		exeName = "opencode.exe"
@@ -212,7 +251,6 @@ func runDownload() {
 		return
 	}
 
-	// 8. 部署到目标目录
 	fmt.Println("")
 	fmt.Println("▶ 正在部署...")
 
@@ -229,20 +267,17 @@ func runDownload() {
 
 	targetPath := filepath.Join(binDir, exeName)
 
-	// 复制文件
 	if err := copyFileWithProgress(exePath, targetPath); err != nil {
 		fmt.Printf("✗ 复制文件失败: %v\n", err)
 		return
 	}
 
-	// 设置可执行权限 (Unix)
 	if runtime.GOOS != "windows" {
 		os.Chmod(targetPath, 0755)
 	}
 
 	fmt.Printf("✓ 已部署到: %s\n", targetPath)
 
-	// 9. 配置 PATH（复用 deploy 逻辑）
 	fmt.Println("")
 	fmt.Println("▶ 正在配置系统 PATH...")
 
@@ -254,7 +289,6 @@ func runDownload() {
 		fmt.Println("✓ PATH 配置完成")
 	}
 
-	// 10. 完成
 	fmt.Println("")
 	fmt.Println("══════════════════════════════════════════════════")
 	fmt.Println("  ✓ OpenCode 汉化版安装完成!")
@@ -269,15 +303,21 @@ func runDownload() {
 	fmt.Println("    3. 输入 /connect 配置 AI 模型")
 }
 
-// getLatestRelease 获取最新 Release 信息
-func getLatestRelease() (*GitHubRelease, error) {
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", buildGiteaAPIURL(), nil)
+func setAuthIfPresent(req *http.Request, username, token string) {
+	if username != "" && token != "" {
+		req.SetBasicAuth(username, token)
+	}
+}
+
+func getLatestRelease(host, username, token string) (*GiteaRelease, error) {
+	client := &http.Client{Timeout: 10 * time.Second}
+	req, err := http.NewRequest("GET", buildGiteaAPIURL(host), nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("User-Agent", "OpenCode-CLI")
+	setAuthIfPresent(req, username, token)
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -286,10 +326,10 @@ func getLatestRelease() (*GitHubRelease, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("HTTP %d: %s", resp.StatusCode, resp.Status)
+		return nil, fmt.Errorf("HTTP %d", resp.StatusCode)
 	}
 
-	var release GitHubRelease
+	var release GiteaRelease
 	if err := json.NewDecoder(resp.Body).Decode(&release); err != nil {
 		return nil, err
 	}
@@ -297,16 +337,22 @@ func getLatestRelease() (*GitHubRelease, error) {
 	return &release, nil
 }
 
-// downloadFile 下载文件（带进度显示）
-func downloadFile(url, dest string) error {
-	resp, err := http.Get(url)
+func downloadFileWithAuth(url, dest, username, token string) error {
+	client := &http.Client{Timeout: 5 * time.Minute}
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return err
+	}
+	setAuthIfPresent(req, username, token)
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		return fmt.Errorf("HTTP %d: %s", resp.StatusCode, resp.Status)
+		return fmt.Errorf("HTTP %d", resp.StatusCode)
 	}
 
 	out, err := os.Create(dest)
@@ -315,7 +361,6 @@ func downloadFile(url, dest string) error {
 	}
 	defer out.Close()
 
-	// 简单进度显示
 	totalSize := resp.ContentLength
 	downloaded := int64(0)
 	buf := make([]byte, 32*1024)
