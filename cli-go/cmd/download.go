@@ -29,10 +29,9 @@ var giteaHosts = []string{
 	"https://gitea.re-v0.com",
 }
 
-func getGiteaCredentials() (username, token string, ok bool) {
-	username = os.Getenv("GITEA_USER")
-	token = os.Getenv("GITEA_TOKEN")
-	return username, token, username != "" && token != ""
+func getGiteaToken() (string, bool) {
+	token := os.Getenv("GITEA_TOKEN")
+	return token, token != ""
 }
 
 func buildGiteaAPIURL(host string) string {
@@ -84,23 +83,22 @@ func runDownload() {
 	fmt.Println("  适用于无法安装 Bun/Node.js 或想快速体验的用户")
 	fmt.Println("")
 
-	username, token, hasCreds := getGiteaCredentials()
+	token, hasCreds := getGiteaToken()
 	if !hasCreds {
-		fmt.Println("  ⚠ 未检测到 Gitea 认证信息 (GITEA_USER / GITEA_TOKEN)")
+		fmt.Println("  ⚠ 未检测到 Gitea 认证信息 (GITEA_TOKEN)")
 		fmt.Println("  将尝试匿名访问，部分节点可能需要认证才能下载")
 		fmt.Println("")
 		fmt.Println("  配置方法 (添加到 ~/.bashrc 或 ~/.zshrc):")
-		fmt.Println("    export GITEA_USER=<你的用户名>")
 		fmt.Println("    export GITEA_TOKEN=<你的访问令牌>")
 		fmt.Println("")
 		fmt.Println("  获取令牌: Gitea → 设置 → 应用 → 管理 Access Token")
 		fmt.Println("")
-		fmt.Printf("  示例 (带认证下载):\n")
-		fmt.Printf("    curl -u '$GITEA_USER:$GITEA_TOKEN' -LO %s/%s/releases/download/nightly/opencode-zh-CN-linux-x64.zip\n",
+		fmt.Println("  示例 (带认证下载):")
+		fmt.Printf("    curl -H 'Authorization: token $GITEA_TOKEN' -LO %s/%s/releases/download/nightly/opencode-zh-CN-linux-x64.zip\n",
 			giteaHosts[len(giteaHosts)-1], GiteaRepo)
 		fmt.Println("")
 	} else {
-		fmt.Printf("  认证用户: %s\n", username)
+		fmt.Println("  ✓ 已加载 GITEA_TOKEN")
 		fmt.Println("")
 	}
 
@@ -109,7 +107,7 @@ func runDownload() {
 	var release *GiteaRelease
 	var activeHost string
 	for _, host := range giteaHosts {
-		r, err := getLatestRelease(host, username, token)
+		r, err := getLatestRelease(host, token)
 		if err != nil {
 			fmt.Printf("  ✗ %s — %v\n", host, err)
 			continue
@@ -200,7 +198,7 @@ func runDownload() {
 	for _, host := range giteaHosts {
 		url := buildAssetDownloadURL(host, release.TagName, assetName)
 		fmt.Printf("  尝试: %s\n", host)
-		if err := downloadFileWithAuth(url, zipPath, username, token); err != nil {
+		if err := downloadFileWithAuth(url, zipPath, token); err != nil {
 			fmt.Printf("  ✗ 失败: %v\n", err)
 			continue
 		}
@@ -303,13 +301,13 @@ func runDownload() {
 	fmt.Println("    3. 输入 /connect 配置 AI 模型")
 }
 
-func setAuthIfPresent(req *http.Request, username, token string) {
-	if username != "" && token != "" {
-		req.SetBasicAuth(username, token)
+func setAuthIfPresent(req *http.Request, token string) {
+	if token != "" {
+		req.Header.Set("Authorization", "token "+token)
 	}
 }
 
-func getLatestRelease(host, username, token string) (*GiteaRelease, error) {
+func getLatestRelease(host, token string) (*GiteaRelease, error) {
 	client := &http.Client{Timeout: 10 * time.Second}
 	req, err := http.NewRequest("GET", buildGiteaAPIURL(host), nil)
 	if err != nil {
@@ -317,7 +315,7 @@ func getLatestRelease(host, username, token string) (*GiteaRelease, error) {
 	}
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("User-Agent", "OpenCode-CLI")
-	setAuthIfPresent(req, username, token)
+	setAuthIfPresent(req, token)
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -337,13 +335,13 @@ func getLatestRelease(host, username, token string) (*GiteaRelease, error) {
 	return &release, nil
 }
 
-func downloadFileWithAuth(url, dest, username, token string) error {
+func downloadFileWithAuth(url, dest, token string) error {
 	client := &http.Client{Timeout: 5 * time.Minute}
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return err
 	}
-	setAuthIfPresent(req, username, token)
+	setAuthIfPresent(req, token)
 
 	resp, err := client.Do(req)
 	if err != nil {
